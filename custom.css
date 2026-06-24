@@ -1,0 +1,76 @@
+/*
+ * Vivaldi Tiled Tabs Dynamic Color-Linking Mod
+ * Visual styling for linked/tiled tabs
+ */
+
+/* Primary Indicator: 3px horizontal accent bar at the top edge of the tab */
+.tab.tab-tiled-link::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--tile-group-color);
+    z-index: 10;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+/* Secondary Indicator: Subtle glow of the same color when the mouse hovers over any tab within the group */
+.tab.tab-tiled-link.tiled-group-hover::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: inset 0 15px 15px -10px var(--tile-group-color);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 9;
+    transition: opacity 0.2s ease;
+}
+
+/* Hover state specific to a single tab */
+.tab.tab-tiled-link:hover::after {
+    opacity: 0.5;
+}
+
+/* Active State: The active tab within the tile group should be vibrant. */
+.tab.tab-tiled-link.active::before {
+    opacity: 1;
+}
+
+/* Background/Inactive State: Tiled tabs have a 50% opacity version of the color cue */
+.tab.tab-tiled-link:not(.active)::before {
+    opacity: 0.5;
+}
+
+/* Edge Case: Private Windows - darker/muted palette */
+#browser.private .tab.tab-tiled-link::before {
+    filter: brightness(0.7) saturate(0.8);
+}
+
+/*
+ * Edge Case: Too Many Groups
+ * If there are more groups than available colors, a pattern class is appended.
+ */
+.tab.tab-tiled-link.pattern-stripe::before {
+    background: repeating-linear-gradient(
+        45deg,
+        var(--tile-group-color),
+        var(--tile-group-color) 10px,
+        rgba(255, 255, 255, 0.5) 10px,
+        rgba(255, 255, 255, 0.5) 20px
+    );
+}
+
+#browser.theme-dark .tab.tab-tiled-link.pattern-stripe::before {
+    background: repeating-linear-gradient(
+        45deg,
+        var(--tile-group-color),
+        var(--tile-group-color) 10px,
+        rgba(0, 0, 0, 0.5) 10px,
+        rgba(0, 0, 0, 0.5) 20px
+    );
+}
