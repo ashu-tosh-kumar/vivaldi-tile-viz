@@ -1,0 +1,12 @@
+{
+  "name": "vivaldi-tile-viz",
+  "type": "module",
+  "packageManager": "pnpm@10.12.4",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
+  }
+}
