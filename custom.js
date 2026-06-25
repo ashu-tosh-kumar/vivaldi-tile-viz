@@ -32,9 +32,16 @@
     ];
 
     let colorPool = [...TILE_PALETTE];
+    // Colors released this cycle; flushed back to colorPool at the START of the
+    // next cycle so they can't be immediately reassigned in the same pass.
+    let pendingPool = [];
     let groupColorMap = new Map();
-    let groupCount = 0;
+    // Monotonic counter used only for overflow pattern index — never decremented,
+    // so it can't drift negative the way groupCount-- could.
+    let assignCount = 0;
     let tabStateMap = new WeakMap();
+    // groupId -> Set<tabEl>: rebuilt each update cycle for O(1) hover lookup.
+    let groupTabsMap = new Map();
 
     // ── Color assignment ─────────────────────────────────────────────
 
@@ -71,6 +78,13 @@
         return null;
     }
 
+    function flushPendingColors() {
+        if (pendingPool.length > 0) {
+            colorPool.push(...pendingPool);
+            pendingPool = [];
+        }
+    }
+
     function assignColorToGroup(groupId) {
         if (groupColorMap.has(groupId)) return groupColorMap.get(groupId);
         const theme = getThemeColor();
@@ -81,27 +95,36 @@
             found = true; break;
         }
         if (clashed.length) colorPool.push(...clashed);
-        if (!found) { color = TILE_PALETTE[groupCount % TILE_PALETTE.length]; isPattern = true; }
+        if (!found) { color = TILE_PALETTE[assignCount % TILE_PALETTE.length]; isPattern = true; }
         const d = { color, pattern: isPattern };
         groupColorMap.set(groupId, d);
-        groupCount++;
+        assignCount++;
         return d;
     }
 
     function releaseGroupColor(groupId) {
         if (!groupColorMap.has(groupId)) return;
         const d = groupColorMap.get(groupId);
-        if (!d.pattern) colorPool.push(d.color);
+        // Stage to pendingPool so the color isn't immediately available for
+        // reassignment in this same update cycle (prevents color thrash).
+        if (!d.pattern) pendingPool.push(d.color);
         groupColorMap.delete(groupId);
-        groupCount--;
     }
 
     // ── Tab bar helpers ──────────────────────────────────────────────
 
+    function getTabBarContainers() {
+        const selectors = [
+            '#tabs-tabbar-container',
+            '#tabs-container',
+            '.tabbar-wrapper',
+            '.tab-strip',
+        ];
+        const found = selectors.map(s => document.querySelector(s)).filter(Boolean);
+        return found.length > 0 ? found : [document.getElementById('browser')].filter(Boolean);
+    }
+
     function getAllTabElements() {
-        // Query the whole tab bar root so we catch second-level tabs in an
-        // expanded stack (which render in their own substack strip), not just
-        // the top-level strip.
         for (const sel of [
             '#tabs-tabbar-container .tab', '#tabs-container .tab',
             '.tabbar-wrapper .tab', '.tab-strip .tab',
@@ -113,16 +136,22 @@
     }
 
     /**
-     * Extract identifier from a tab element's favicon span.
-     * Returns { id: string, isStack: boolean } or null.
+     * Extract identifier from a tab element.
+     * Tries the favicon id pattern first, then data-tab-id as fallback.
+     * Returns { id: string, isStack: boolean } or null if not yet available.
      */
     function getTabIdentifier(tabEl) {
         const fav = tabEl.querySelector('[id$="-favicon"]');
-        if (!fav || !fav.id) return null;
-        const m = fav.id.match(/^tab-(.+)-favicon$/);
-        if (!m) return null;
-        const id = m[1];
-        return { id, isStack: !/^\d+$/.test(id) };
+        if (fav && fav.id) {
+            const m = fav.id.match(/^tab-(.+)-favicon$/);
+            if (m) {
+                const id = m[1];
+                return { id, isStack: !/^\d+$/.test(id) };
+            }
+        }
+        const dataId = tabEl.dataset.tabId || tabEl.getAttribute('data-tab-id');
+        if (dataId) return { id: dataId, isStack: false };
+        return null;
     }
 
     // ── chrome.tabs API bridge ───────────────────────────────────────
@@ -136,10 +165,6 @@
 
     /**
      * Build tile groups from each tab's vivExtData.tiling.id.
-     * All tabs sharing a tiling.id are tiled together = one group.
-     * Only groups with >= 2 members are kept (a tile of one isn't a tile —
-     * e.g. leftover tiling data after a tile-mate was closed).
-     *
      * Returns Map<tilingId, Set<tabIdString>>
      */
     function buildTilingGroups(chromeTabs) {
@@ -164,22 +189,29 @@
     // ── Main update ──────────────────────────────────────────────────
 
     async function updateTiledTabs() {
+        // Flush colors released last cycle back into the pool now that a full
+        // cycle has passed — prevents immediate reassignment of the same color.
+        flushPendingColors();
+
         const chromeTabs = await queryChromeTabs();
         const groups = buildTilingGroups(chromeTabs);
 
-        // Invert: tabId -> tilingId
         const tabToGroup = new Map();
         groups.forEach((members, tilingId) => {
             members.forEach(id => tabToGroup.set(id, tilingId));
         });
 
+        // Rebuild hover cache each cycle
+        groupTabsMap.clear();
+
         getAllTabElements().forEach(tabEl => {
-            // Issue 3: never color a stack ("tab-group") tab. Color only the
-            // individual member tabs (second level) or standalone tiled tabs.
             if (tabEl.classList.contains('tab-group')) { cleanupTab(tabEl); return; }
 
             const ident = getTabIdentifier(tabEl);
-            if (!ident || ident.isStack) { cleanupTab(tabEl); return; }
+            // Don't clean up tabs we can't identify — the favicon may be
+            // temporarily absent during load or animation. Skip instead.
+            if (!ident) return;
+            if (ident.isStack) { cleanupTab(tabEl); return; }
 
             const tilingId = tabToGroup.get(ident.id);
             if (tilingId) {
@@ -187,8 +219,10 @@
                 tabEl.classList.add('tab-tiled-link');
                 tabEl.classList.toggle('pattern-stripe', style.pattern);
                 tabStateMap.set(tabEl, tilingId);
-                // Set the color on the wrapper (parent of .tab) so the indicator
-                // bar lives outside .tab's overflow:hidden clipping context.
+
+                if (!groupTabsMap.has(tilingId)) groupTabsMap.set(tilingId, new Set());
+                groupTabsMap.get(tilingId).add(tabEl);
+
                 const wrapper = tabEl.closest('.tab-wrapper');
                 if (wrapper) {
                     wrapper.classList.add('tab-tiled-wrapper');
@@ -200,9 +234,6 @@
             }
         });
 
-        // Release colors for tile groups that no longer exist. Keyed off the
-        // tiling data (not DOM visibility) so a collapsed stack's tiled tabs
-        // keep their color when the stack is expanded again.
         for (const [gid] of groupColorMap.entries()) {
             if (!groups.has(gid)) releaseGroupColor(gid);
         }
@@ -226,18 +257,18 @@
         const tab = e.target.closest('.tab.tab-tiled-link');
         if (!tab) return;
         const gid = tabStateMap.get(tab);
-        if (gid) document.querySelectorAll('.tab.tab-tiled-link').forEach(t => {
-            if (tabStateMap.get(t) === gid) t.classList.add('tiled-group-hover');
-        });
+        if (!gid) return;
+        const peers = groupTabsMap.get(gid);
+        if (peers) peers.forEach(t => t.classList.add('tiled-group-hover'));
     });
 
     document.addEventListener('mouseout', e => {
         const tab = e.target.closest('.tab.tab-tiled-link');
         if (!tab) return;
         const gid = tabStateMap.get(tab);
-        if (gid) document.querySelectorAll('.tab.tab-tiled-link').forEach(t => {
-            if (tabStateMap.get(t) === gid) t.classList.remove('tiled-group-hover');
-        });
+        if (!gid) return;
+        const peers = groupTabsMap.get(gid);
+        if (peers) peers.forEach(t => t.classList.remove('tiled-group-hover'));
     });
 
     // ── Lifecycle ────────────────────────────────────────────────────
@@ -248,16 +279,39 @@
         updateTimeout = setTimeout(() => { updateTiledTabs(); updateTimeout = null; }, 150);
     }
 
+    function attachTabBarObservers() {
+        const containers = getTabBarContainers();
+        containers.forEach(container => {
+            new MutationObserver(scheduleUpdate).observe(container, {
+                childList: true, subtree: true,
+                attributes: true,
+                // vivExtData changes reach us via chrome.tabs events, not DOM attrs.
+                // Observe class/style for tab state, and data-tab-id as fallback id.
+                attributeFilter: ['class', 'style', 'data-tab-id'],
+            });
+        });
+        log(`TileViz: observing ${containers.length} tab bar container(s)`);
+    }
+
+    function attachChromeTabEvents() {
+        if (typeof chrome === 'undefined' || !chrome.tabs) return;
+        // These fire when vivExtData (tiling) changes, tabs open/close, or move.
+        ['onUpdated', 'onRemoved', 'onAttached', 'onDetached'].forEach(evt => {
+            if (chrome.tabs[evt]) chrome.tabs[evt].addListener(scheduleUpdate);
+        });
+        log('TileViz: chrome.tabs events attached');
+    }
+
     function init() {
         const browser = document.getElementById('browser');
         if (!browser) { setTimeout(init, 500); return; }
         log('TileViz initialized');
-        new MutationObserver(scheduleUpdate).observe(browser, {
-            childList: true, subtree: true,
-            attributes: true, attributeFilter: ['class', 'style']
-        });
+        attachTabBarObservers();
+        attachChromeTabEvents();
         setTimeout(updateTiledTabs, 1000);
-        setInterval(updateTiledTabs, 2000);
+        // Infrequent safety net — covers edge cases MutationObserver may miss
+        // (e.g. theme color changes that affect clash detection).
+        setInterval(updateTiledTabs, 15000);
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

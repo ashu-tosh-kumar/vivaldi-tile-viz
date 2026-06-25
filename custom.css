@@ -5,10 +5,11 @@
 
 /* ── Positioning context ─────────────────────────────────────────── */
 /* Bar lives on .tab-wrapper (outside .tab's overflow:hidden clip).
-   .tab keeps position:relative only for the hover glow overlay. */
+   overflow:hidden is intentionally omitted — the ::after bar is bounded
+   by left:0;right:0 and doesn't need clipping, and hiding overflow would
+   clip badge indicators and other Vivaldi tab UI chrome. */
 .tab-wrapper.tab-tiled-wrapper {
     position: relative !important;
-    overflow: hidden !important;
 }
 
 .tab.tab-tiled-link {
