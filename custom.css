@@ -1,42 +1,38 @@
 /*
  * Vivaldi Tiled Tabs Dynamic Color-Linking Mod
  * Visual styling for linked/tiled tabs
- *
- * Modeled after Vivaldi's native tab stack color indicator:
- * a solid, always-visible bar at the top of the tab.
  */
 
-/* ── Positioning context ────────────────────────────────────────── */
-/* Anchor the indicator to the .tab box itself. Vivaldi's active tab
-   (.tab.active) does not establish a consistent positioning context, so
-   without this the absolutely-positioned bar escapes above the selected
-   tab. Forcing position:relative on the tab keeps the bar inside it in
-   both the active and inactive states. */
+/* ── Positioning context ─────────────────────────────────────────── */
+/* Bar lives on .tab-wrapper (outside .tab's overflow:hidden clip).
+   .tab keeps position:relative only for the hover glow overlay. */
+.tab-wrapper.tab-tiled-wrapper {
+    position: relative !important;
+    overflow: hidden !important;
+}
+
 .tab.tab-tiled-link {
     position: relative !important;
 }
 
 /* ── Primary Indicator: Solid top bar ───────────────────────────── */
-/* Mimics Vivaldi's native stack color bar — always fully opaque,
-   thick enough to be clearly visible at a glance. */
-.tab.tab-tiled-link::after {
+/* Anchored to .tab-wrapper so .tab's overflow:hidden cannot clip it. */
+.tab-wrapper.tab-tiled-wrapper::after {
     content: "" !important;
     display: block !important;
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    height: 4px !important;
+    height: 3px !important;
     background-color: var(--tile-group-color) !important;
-    z-index: 100 !important;
+    z-index: 9999 !important;
     opacity: 1 !important;
     pointer-events: none !important;
     border-radius: 0 !important;
 }
 
 /* ── Hover glow: Group highlight ────────────────────────────────── */
-/* When hovering any tab in the group, all group members get a
-   subtle top glow so you can see the full group at a glance. */
 .tab.tab-tiled-link.tiled-group-hover::before {
     content: "" !important;
     display: block !important;
@@ -61,12 +57,12 @@
 }
 
 /* ── Private window: muted colors ───────────────────────────────── */
-#browser.private .tab.tab-tiled-link::after {
+#browser.private .tab-wrapper.tab-tiled-wrapper::after {
     filter: brightness(0.7) saturate(0.8) !important;
 }
 
 /* ── Too many groups: striped pattern ───────────────────────────── */
-.tab.tab-tiled-link.pattern-stripe::after {
+.tab-wrapper.tab-tiled-wrapper.tab-tiled-wrapper-stripe::after {
     background: repeating-linear-gradient(
         45deg,
         var(--tile-group-color),
@@ -76,7 +72,7 @@
     ) !important;
 }
 
-#browser.theme-dark .tab.tab-tiled-link.pattern-stripe::after {
+#browser.theme-dark .tab-wrapper.tab-tiled-wrapper.tab-tiled-wrapper-stripe::after {
     background: repeating-linear-gradient(
         45deg,
         var(--tile-group-color),

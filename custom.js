@@ -185,9 +185,16 @@
             if (tilingId) {
                 const style = assignColorToGroup(tilingId);
                 tabEl.classList.add('tab-tiled-link');
-                tabEl.style.setProperty('--tile-group-color', style.color);
                 tabEl.classList.toggle('pattern-stripe', style.pattern);
                 tabStateMap.set(tabEl, tilingId);
+                // Set the color on the wrapper (parent of .tab) so the indicator
+                // bar lives outside .tab's overflow:hidden clipping context.
+                const wrapper = tabEl.closest('.tab-wrapper');
+                if (wrapper) {
+                    wrapper.classList.add('tab-tiled-wrapper');
+                    wrapper.style.setProperty('--tile-group-color', style.color);
+                    wrapper.classList.toggle('tab-tiled-wrapper-stripe', style.pattern);
+                }
             } else {
                 cleanupTab(tabEl);
             }
@@ -204,8 +211,12 @@
     function cleanupTab(tab) {
         if (tab.classList.contains('tab-tiled-link')) {
             tab.classList.remove('tab-tiled-link', 'pattern-stripe', 'tiled-group-hover');
-            tab.style.removeProperty('--tile-group-color');
             tabStateMap.delete(tab);
+            const wrapper = tab.closest('.tab-wrapper');
+            if (wrapper) {
+                wrapper.classList.remove('tab-tiled-wrapper', 'tab-tiled-wrapper-stripe');
+                wrapper.style.removeProperty('--tile-group-color');
+            }
         }
     }
 
