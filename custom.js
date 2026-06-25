@@ -42,6 +42,7 @@
     let tabStateMap = new WeakMap();
     // groupId -> Set<tabEl>: rebuilt each update cycle for O(1) hover lookup.
     let groupTabsMap = new Map();
+    let chromeTabsListenersAttached = false;
 
     // ── Color assignment ─────────────────────────────────────────────
 
@@ -294,11 +295,13 @@
     }
 
     function attachChromeTabEvents() {
+        if (chromeTabsListenersAttached) return;
         if (typeof chrome === 'undefined' || !chrome.tabs) return;
         // These fire when vivExtData (tiling) changes, tabs open/close, or move.
         ['onUpdated', 'onRemoved', 'onAttached', 'onDetached'].forEach(evt => {
             if (chrome.tabs[evt]) chrome.tabs[evt].addListener(scheduleUpdate);
         });
+        chromeTabsListenersAttached = true;
         log('TileViz: chrome.tabs events attached');
     }
 
