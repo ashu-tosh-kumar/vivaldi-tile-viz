@@ -42,11 +42,9 @@
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    background: linear-gradient(
-        180deg,
-        var(--tile-group-color) 0%,
-        transparent 60%
-    ) !important;
+    background: linear-gradient(180deg,
+            var(--tile-group-color) 0%,
+            transparent 60%) !important;
     opacity: 0.18 !important;
     pointer-events: none !important;
     z-index: 99 !important;
@@ -64,21 +62,17 @@
 
 /* ── Too many groups: striped pattern ───────────────────────────── */
 .tab-wrapper.tab-tiled-wrapper.tab-tiled-wrapper-stripe::after {
-    background: repeating-linear-gradient(
-        45deg,
-        var(--tile-group-color),
-        var(--tile-group-color) 6px,
-        rgba(255, 255, 255, 0.4) 6px,
-        rgba(255, 255, 255, 0.4) 12px
-    ) !important;
+    background: repeating-linear-gradient(45deg,
+            var(--tile-group-color),
+            var(--tile-group-color) 6px,
+            rgba(255, 255, 255, 0.4) 6px,
+            rgba(255, 255, 255, 0.4) 12px) !important;
 }
 
 #browser.theme-dark .tab-wrapper.tab-tiled-wrapper.tab-tiled-wrapper-stripe::after {
-    background: repeating-linear-gradient(
-        45deg,
-        var(--tile-group-color),
-        var(--tile-group-color) 6px,
-        rgba(0, 0, 0, 0.4) 6px,
-        rgba(0, 0, 0, 0.4) 12px
-    ) !important;
+    background: repeating-linear-gradient(45deg,
+            var(--tile-group-color),
+            var(--tile-group-color) 6px,
+            rgba(0, 0, 0, 0.4) 6px,
+            rgba(0, 0, 0, 0.4) 12px) !important;
 }
