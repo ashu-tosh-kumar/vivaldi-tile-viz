@@ -2,7 +2,19 @@ env:
   browser: true
   es2021: true
 extends: standard
+globals:
+  chrome: readonly
 overrides: []
 parserOptions:
   ecmaVersion: latest
-rules: {}
+rules:
+  indent: ["error", 4]
+  semi: ["error", "always"]
+  space-before-function-paren: ["error", { "anonymous": "always", "named": "never", "asyncArrow": "always" }]
+  comma-dangle: ["error", "only-multiline"]
+  object-property-newline: "off"
+  padded-blocks: "off"
+  quotes: "off"
+  curly: "off"
+  one-var: "off"
+  prefer-const: "off"
