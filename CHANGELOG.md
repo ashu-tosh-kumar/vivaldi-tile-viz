@@ -2,16 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [v1.0.1]
+## [v1.1.0]
 
-### Fixed
+### Added
 
-- **Palette order**: Moved orange (`#ff9100`) from position 3 to position 4, placing it furthest from red (`#ef3939`) in the queue to prevent the two colors appearing as adjacent tile groups.
+- **Active vs. Background Contrast**: The active tab in a tiled group now displays the accent bar at full brightness. All other tabs in the same group are subtly dimmed to 65% opacity, making it immediately clear which tiled tab is in focus without losing the group context.
 
 ### Changed
 
-- **Hover glow**: Replaced full-tab gradient overlay with a targeted opacity boost on the accent bar only — hovering any tab in a group brings all peers' top bars to full brightness.
-- **Active vs. background contrast**: Now fully implemented. The active tab's bar renders at full opacity; inactive tiled tabs are rendered at 65% opacity (visually distinct but clearly readable).
+- **Hover glow**: Hovering any tab in a group now brightens the accent bars of all peers to full opacity, replacing the previous full-tab gradient overlay. The effect is more focused and less visually intrusive.
+
+### Fixed
+
+- **Color adjacency**: Red and orange are now separated by the maximum distance in the assignment queue, so they can no longer be assigned to adjacent tile groups.
+- **Tab corner rounding**: The accent bar now correctly conforms to Vivaldi's tab corner rounding setting across all values (0–14). Previously, high rounding values caused the bar to visually extend beyond the rounded tab corners.
+- **DPI scaling**: On systems with non-integer display scaling (e.g. 125%, 150%), the accent bar no longer bleeds into the gap between tabs.
 
 ---
 
