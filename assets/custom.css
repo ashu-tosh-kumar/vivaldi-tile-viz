@@ -5,9 +5,9 @@
 
 /* ── Positioning context ─────────────────────────────────────────── */
 /* Bar lives on .tab-wrapper (outside .tab's overflow:hidden clip).
-   overflow:hidden is intentionally omitted — the ::after bar is bounded
-   by left:0;right:0 and doesn't need clipping, and hiding overflow would
-   clip badge indicators and other Vivaldi tab UI chrome. */
+   JS measures the exact .tab vs .tab-wrapper bounds each cycle and writes
+   --tile-bar-inset-left/right so the bar matches the visual tab width even
+   when DPI scaling causes the wrapper to round 1px wider than the tab. */
 .tab-wrapper.tab-tiled-wrapper {
     position: relative !important;
 }
@@ -23,36 +23,27 @@
     display: block !important;
     position: absolute !important;
     top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+    left: var(--tile-bar-inset-left, 0) !important;
+    right: var(--tile-bar-inset-right, 0) !important;
     height: 3px !important;
     background-color: var(--tile-group-color) !important;
     z-index: 9999 !important;
     opacity: 1 !important;
     pointer-events: none !important;
     border-radius: 0 !important;
-}
-
-/* ── Hover glow: Group highlight ────────────────────────────────── */
-.tab.tab-tiled-link.tiled-group-hover::before {
-    content: "" !important;
-    display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: linear-gradient(180deg,
-            var(--tile-group-color) 0%,
-            transparent 60%) !important;
-    opacity: 0.18 !important;
-    pointer-events: none !important;
-    z-index: 99 !important;
     transition: opacity 0.15s ease !important;
 }
 
-.tab.tab-tiled-link:hover::before {
-    opacity: 0.25 !important;
+/* ── Active vs. background contrast ────────────────────────────── */
+/* Active tiled tab stays full opacity; inactive peers are dimmed. */
+.tab-wrapper.tab-tiled-wrapper:not(:has(.tab.active))::after {
+    opacity: 0.65 !important;
+}
+
+/* ── Hover: restore full opacity on all bars in the hovered group ── */
+/* Must come after the active/dim rule — same specificity, last wins. */
+.tab-wrapper.tab-tiled-wrapper:has(.tab.tiled-group-hover)::after {
+    opacity: 1 !important;
 }
 
 /* ── Private window: muted colors ───────────────────────────────── */

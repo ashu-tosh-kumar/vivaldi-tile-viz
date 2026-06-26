@@ -9,7 +9,7 @@ A visual enhancements mod for Vivaldi browser that dynamically color-codes tiled
 - **Instant Accent Bars**: A slim, clean 3px color bar marks the top edge of tabs that are currently tiled together in a split-screen layout.
 - **Smart Color Selection**: Automatically assigns a unique color to each new group of tiled tabs, cycling through a harmonious, high-contrast palette of 8 colors.
 - **Theme Clash Prevention**: Detects Vivaldi's current active theme background color and automatically skips colors that would be hard to see against it.
-- **Interactive Hover Glow**: Hovering your mouse cursor over one tiled tab lights up all other tabs linked in that same grid, providing a subtle visual highlight.
+- **Interactive Hover Glow**: Hovering your mouse cursor over one tiled tab brightens the accent bar on all other tabs linked in that same grid, providing a subtle visual highlight.
 - **Active vs. Background Contrast**: The active tab in a tiled group shines in full color, while background tiled tabs are slightly dimmed so they don't distract you.
 - **Private Browsing Mode**: Automatically reduces the brightness and saturation of color cues in Private Windows to blend in with Vivaldi's private mode.
 - **Infinite Group Support**: If you exceed the 8-color palette limit, the mod automatically switches to a beautiful striped pattern to continue identifying groups.

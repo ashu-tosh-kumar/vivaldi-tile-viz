@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.1]
+
+### Fixed
+
+- **Palette order**: Moved orange (`#ff9100`) from position 3 to position 4, placing it furthest from red (`#ef3939`) in the queue to prevent the two colors appearing as adjacent tile groups.
+
+### Changed
+
+- **Hover glow**: Replaced full-tab gradient overlay with a targeted opacity boost on the accent bar only — hovering any tab in a group brings all peers' top bars to full brightness.
+- **Active vs. background contrast**: Now fully implemented. The active tab's bar renders at full opacity; inactive tiled tabs are rendered at 65% opacity (visually distinct but clearly readable).
+
+---
+
 ## [v1.0.0]
 
 ### Added
