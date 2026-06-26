@@ -22,8 +22,8 @@
 
 /* ── Primary Indicator: Solid top bar ───────────────────────────── */
 /* Anchored to .tab-wrapper so .tab's overflow:hidden cannot clip it.
-   clip-path: inset() shapes the bar to match the visual tab precisely —
-   both the DPI inset and the corner radius — in a single declaration. */
+   DPI inset vars keep the bar flush with the visual tab on non-integer
+   display scales; wrapper's overflow:hidden handles corner rounding. */
 .tab-wrapper.tab-tiled-wrapper::after {
     content: "" !important;
     display: block !important;
