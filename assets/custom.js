@@ -205,47 +205,61 @@
         // Rebuild hover cache each cycle
         groupTabsMap.clear();
 
-        getAllTabElements().forEach(tabEl => {
-            if (tabEl.classList.contains('tab-group')) { cleanupTab(tabEl); return; }
+        // ── Read phase ───────────────────────────────────────────────
+        // Batch all getBoundingClientRect / getComputedStyle calls before
+        // any DOM writes to avoid repeated forced-layout recalculations.
+        const planned = getAllTabElements().map(tabEl => {
+            const isGroup = tabEl.classList.contains('tab-group');
+            const ident = isGroup ? null : getTabIdentifier(tabEl);
+            if (isGroup || !ident || ident.isStack) return { tabEl, isGroup, ident };
 
-            const ident = getTabIdentifier(tabEl);
+            const tilingId = tabToGroup.get(ident.id);
+            if (!tilingId) return { tabEl, ident };
+
+            const wrapper = tabEl.closest('.tab-wrapper');
+            let insetLeft = 0, insetRight = 0, radiusTl = '0px', radiusTr = '0px';
+            if (wrapper) {
+                const tabRect = tabEl.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                if (tabRect.width > 0 && wrapperRect.width > 0) {
+                    // Clamp to non-negative and round to integer px — the bar
+                    // uses clip-path inset which renders cleanest at whole pixels.
+                    insetLeft = Math.max(0, Math.round(tabRect.left - wrapperRect.left));
+                    insetRight = Math.max(0, Math.round(wrapperRect.right - tabRect.right));
+                }
+                const cs = window.getComputedStyle(tabEl);
+                radiusTl = cs.borderTopLeftRadius;
+                radiusTr = cs.borderTopRightRadius;
+            }
+            return { tabEl, ident, tilingId, wrapper, insetLeft, insetRight, radiusTl, radiusTr };
+        });
+
+        // ── Write phase ──────────────────────────────────────────────
+        planned.forEach(({ tabEl, isGroup, ident, tilingId, wrapper,
+                           insetLeft, insetRight, radiusTl, radiusTr }) => {
+            if (isGroup) { cleanupTab(tabEl); return; }
             // Don't clean up tabs we can't identify — the favicon may be
             // temporarily absent during load or animation. Skip instead.
             if (!ident) return;
             if (ident.isStack) { cleanupTab(tabEl); return; }
+            if (!tilingId) { cleanupTab(tabEl); return; }
 
-            const tilingId = tabToGroup.get(ident.id);
-            if (tilingId) {
-                const style = assignColorToGroup(tilingId);
-                tabEl.classList.add('tab-tiled-link');
-                tabEl.classList.toggle('pattern-stripe', style.pattern);
-                tabStateMap.set(tabEl, tilingId);
+            const colorStyle = assignColorToGroup(tilingId);
+            tabEl.classList.add('tab-tiled-link');
+            tabEl.classList.toggle('pattern-stripe', colorStyle.pattern);
+            tabStateMap.set(tabEl, tilingId);
 
-                if (!groupTabsMap.has(tilingId)) groupTabsMap.set(tilingId, new Set());
-                groupTabsMap.get(tilingId).add(tabEl);
+            if (!groupTabsMap.has(tilingId)) groupTabsMap.set(tilingId, new Set());
+            groupTabsMap.get(tilingId).add(tabEl);
 
-                const wrapper = tabEl.closest('.tab-wrapper');
-                if (wrapper) {
-                    wrapper.classList.add('tab-tiled-wrapper');
-                    wrapper.style.setProperty('--tile-group-color', style.color);
-                    wrapper.classList.toggle('tab-tiled-wrapper-stripe', style.pattern);
-                    // Measure the actual .tab vs .tab-wrapper bounds so the bar
-                    // doesn't bleed into inter-tab spacing (e.g. on non-integer
-                    // DPI scales where wrapper rounds 1px wider than the tab).
-                    const tabRect = tabEl.getBoundingClientRect();
-                    const wrapperRect = wrapper.getBoundingClientRect();
-                    if (tabRect.width > 0 && wrapperRect.width > 0) {
-                        wrapper.style.setProperty('--tile-bar-inset-left',
-                            (tabRect.left - wrapperRect.left) + 'px');
-                        wrapper.style.setProperty('--tile-bar-inset-right',
-                            (wrapperRect.right - tabRect.right) + 'px');
-                    }
-                    const cs = window.getComputedStyle(tabEl);
-                    wrapper.style.setProperty('--tile-bar-radius-tl', cs.borderTopLeftRadius);
-                    wrapper.style.setProperty('--tile-bar-radius-tr', cs.borderTopRightRadius);
-                }
-            } else {
-                cleanupTab(tabEl);
+            if (wrapper) {
+                wrapper.classList.add('tab-tiled-wrapper');
+                wrapper.style.setProperty('--tile-group-color', colorStyle.color);
+                wrapper.classList.toggle('tab-tiled-wrapper-stripe', colorStyle.pattern);
+                wrapper.style.setProperty('--tile-bar-inset-left', insetLeft + 'px');
+                wrapper.style.setProperty('--tile-bar-inset-right', insetRight + 'px');
+                wrapper.style.setProperty('--tile-bar-radius-tl', radiusTl);
+                wrapper.style.setProperty('--tile-bar-radius-tr', radiusTr);
             }
         });
 
