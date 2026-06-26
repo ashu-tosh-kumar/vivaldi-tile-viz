@@ -71,8 +71,8 @@ describe('colorDistance', () => {
         // The clash threshold is 50; all palette pairs should exceed it so they
         // are not skipped when assigned as tile-group colours.
         const PALETTE = [
-            '#ef3939', '#00b0ff', '#00e676', '#ff9100',
-            '#d500f9', '#ffea00', '#1de9b6', '#f50057',
+            '#ef3939', '#00b0ff', '#00e676', '#d500f9',
+            '#ff9100', '#ffea00', '#1de9b6', '#f50057',
         ];
         for (let i = 0; i < PALETTE.length; i++) {
             for (let j = i + 1; j < PALETTE.length; j++) {
