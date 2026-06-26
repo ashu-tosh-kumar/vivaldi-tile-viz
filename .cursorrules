@@ -1,0 +1,64 @@
+# AI Development Instructions for Vivaldi Tile Viz Mod
+
+This file provides AI assistants and agents (such as Google Antigravity, Jules, Claude, Gemini, and GitHub Copilot) with guidance on code conventions, architecture constraints, and security models to maintain correctness and consistency when modifying the **Vivaldi Tiled Tabs Dynamic Color-Linking Mod**.
+
+---
+
+## Project Context
+
+- **Project**: Vivaldi Tiled Tabs Dynamic Color-Linking Mod
+- **Purpose**: Dynamically color-codes tab bar elements to visually group tabs that share a tiled split-screen layout.
+- **Environment**: Executes inside Vivaldi's proprietary browser UI page context (`window.html` or `browser.html`). This is a highly privileged environment with access to chrome extension APIs and internal browser APIs.
+- **Dependency Scope**: Zero external packages or build steps. Vanilla JavaScript (`assets/custom.js`) and CSS (`assets/custom.css`).
+
+---
+
+## Vivaldi DOM & Architecture Facts
+
+When implementing features, you must respect Vivaldi's internal UI architecture:
+
+1. **Authoritative Tiling State**:
+   - Standard chrome/extensions APIs do not expose Vivaldi's split-screen tiling state.
+   - Instead, the state is retrieved by querying the current window's tabs via `chrome.tabs.query({ currentWindow: true })`.
+   - Each tab contains a `vivExtData` field (a JSON string). You must parse `vivExtData` (`JSON.parse(tab.vivExtData)`) and read `ext.tiling.id` to identify which tabs belong to the same tiled grid.
+2. **Tab Element Mapping**:
+   - Vivaldi's tab bar elements (`.tab`) do **not** have direct `id` attributes matching chrome tab IDs.
+   - To map a DOM `.tab` element to a Chrome tab:
+     - Check the tab's favicon element: it has an ID matching `tab-{ID}-favicon` (where `ID` is the chrome tab ID or a UUID for stacks).
+     - Fallback: Read the `data-tab-id` attribute on the tab element.
+   - Never color tab stacks (`.tab-group` classes). Only color individual standalone tabs or the active member tab within a stack.
+3. **Debounced UI Updates**:
+   - The UI modifies DOM class names and CSS properties when tabs are updated, removed, or moved, and when the DOM tab container undergoes mutations.
+   - Any update must go through the throttled/debounced `scheduleUpdate()` queue to prevent layout thrashing and browser UI lag.
+
+---
+
+## Code Style & Conventions
+
+- **Indentation**: 4 spaces.
+- **Semicolons**: Always require semicolons.
+- **Variable Declaration**: Prefer `const` for immutable variables, and `let` for mutable values. Avoid `var`.
+- **String Literals**: Double quotes (`"`) are acceptable for string declarations.
+- **Scoping**: All JS code must run inside the Immediately Invoked Function Expression (IIFE) with `'use strict';` enabled to prevent window namespace pollution.
+
+---
+
+## Security Model & Hardening
+
+Because Vivaldi mods run with high browser permissions, you must adhere to these rules:
+
+1. **Zero External Calls**: Absolutely no `fetch`, `XMLHttpRequest`, tracking pixels, telemetry, or remote script imports are allowed. All logic must happen locally.
+2. **No Dynamic Execution**: Never use `eval()`, `new Function()`, or dynamic script injections.
+3. **No Unescaped HTML Injections**: Avoid writing to `innerHTML`. Use CSS variables (`style.setProperty`) and class assignments (`classList.add`/`remove`) to manipulate the visuals.
+4. **Contrast Clash Protection**:
+   - The palette color assigned to a tiled group must be checked against Vivaldi's active theme colors (`--colorAccentBg` or `--colorBg` in DOM).
+   - If the Euclidean color distance between a palette color and the theme color is too small (e.g., `< 50`), skip it to ensure the visual cue is readable.
+
+---
+
+## Debugging Workflow
+
+To test and inspect changes:
+1. Open Vivaldi and navigate to `vivaldi://inspect/#apps`.
+2. Locate the main Vivaldi application entry and click **Inspect** to launch the Vivaldi UI Developer Tools.
+3. Use the **Console** to view logs (set `TILE_DEBUG = true` in `custom.js` for active trace logs) and **Elements** to inspect CSS variable inheritance.
