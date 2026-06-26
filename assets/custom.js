@@ -229,6 +229,17 @@
                     wrapper.classList.add('tab-tiled-wrapper');
                     wrapper.style.setProperty('--tile-group-color', style.color);
                     wrapper.classList.toggle('tab-tiled-wrapper-stripe', style.pattern);
+                    // Measure the actual .tab vs .tab-wrapper bounds so the bar
+                    // doesn't bleed into inter-tab spacing (e.g. on non-integer
+                    // DPI scales where wrapper rounds 1px wider than the tab).
+                    const tabRect = tabEl.getBoundingClientRect();
+                    const wrapperRect = wrapper.getBoundingClientRect();
+                    if (tabRect.width > 0 && wrapperRect.width > 0) {
+                        wrapper.style.setProperty('--tile-bar-inset-left',
+                            (tabRect.left - wrapperRect.left) + 'px');
+                        wrapper.style.setProperty('--tile-bar-inset-right',
+                            (wrapperRect.right - tabRect.right) + 'px');
+                    }
                 }
             } else {
                 cleanupTab(tabEl);
@@ -248,6 +259,8 @@
             if (wrapper) {
                 wrapper.classList.remove('tab-tiled-wrapper', 'tab-tiled-wrapper-stripe');
                 wrapper.style.removeProperty('--tile-group-color');
+                wrapper.style.removeProperty('--tile-bar-inset-left');
+                wrapper.style.removeProperty('--tile-bar-inset-right');
             }
         }
     }
