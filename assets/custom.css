@@ -5,11 +5,13 @@
 
 /* ── Positioning context ─────────────────────────────────────────── */
 /* Bar lives on .tab-wrapper (outside .tab's overflow:hidden clip).
-   JS measures the exact .tab vs .tab-wrapper bounds each cycle and writes
-   --tile-bar-inset-left/right so the bar matches the visual tab width even
-   when DPI scaling causes the wrapper to round 1px wider than the tab. */
+   overflow:hidden + border-radius on the wrapper clips the ::after bar to
+   the tab's exact rounded shape. JS supplies the radius and DPI insets so
+   the clip matches the visual tab regardless of rounding setting or scale. */
 .tab-wrapper.tab-tiled-wrapper {
     position: relative !important;
+    border-radius: var(--tile-bar-radius-tl, 0) var(--tile-bar-radius-tr, 0) 0 0 !important;
+    overflow: hidden !important;
 }
 
 .tab.tab-tiled-link {
@@ -30,7 +32,7 @@
     z-index: 9999 !important;
     opacity: 1 !important;
     pointer-events: none !important;
-    border-radius: var(--tile-bar-radius-tl, 0) var(--tile-bar-radius-tr, 0) 0 0 !important;
+    border-radius: 0 !important;
     transition: opacity 0.15s ease !important;
 }
 
