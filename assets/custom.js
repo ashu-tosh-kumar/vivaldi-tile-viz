@@ -27,8 +27,8 @@
     }
 
     const TILE_PALETTE = [
-        "#ef3939", "#00b0ff", "#00e676", "#ff9100",
-        "#d500f9", "#ffea00", "#1de9b6", "#f50057"
+        "#ef3939", "#00b0ff", "#00e676", "#d500f9",
+        "#ff9100", "#ffea00", "#1de9b6", "#f50057"
     ];
 
     let colorPool = [...TILE_PALETTE];
