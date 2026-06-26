@@ -1,5 +1,7 @@
 # Vivaldi Tiled Tabs Visualizer Mod
 
+<img width="1440" height="808" alt="Screenshot 2026-06-26 at 5 36 38 AM" src="https://github.com/user-attachments/assets/d6fb8973-6df8-4ee6-bcae-83a28d2a3bfe" />
+
 A visual enhancements mod for Vivaldi browser that dynamically color-codes tiled tabs. It places a clean, colorful accent bar at the top edge of tabs that are part of the same split-screen tiled layout, giving you instant visual context on how your workspace is grouped.
 
 ## Features
