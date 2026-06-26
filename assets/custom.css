@@ -30,7 +30,7 @@
     z-index: 9999 !important;
     opacity: 1 !important;
     pointer-events: none !important;
-    border-radius: 0 !important;
+    border-radius: var(--tile-bar-radius-tl, 0) var(--tile-bar-radius-tr, 0) 0 0 !important;
     transition: opacity 0.15s ease !important;
 }
 

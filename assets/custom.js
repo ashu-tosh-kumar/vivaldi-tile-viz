@@ -240,6 +240,9 @@
                         wrapper.style.setProperty('--tile-bar-inset-right',
                             (wrapperRect.right - tabRect.right) + 'px');
                     }
+                    const cs = window.getComputedStyle(tabEl);
+                    wrapper.style.setProperty('--tile-bar-radius-tl', cs.borderTopLeftRadius);
+                    wrapper.style.setProperty('--tile-bar-radius-tr', cs.borderTopRightRadius);
                 }
             } else {
                 cleanupTab(tabEl);
@@ -261,6 +264,8 @@
                 wrapper.style.removeProperty('--tile-group-color');
                 wrapper.style.removeProperty('--tile-bar-inset-left');
                 wrapper.style.removeProperty('--tile-bar-inset-right');
+                wrapper.style.removeProperty('--tile-bar-radius-tl');
+                wrapper.style.removeProperty('--tile-bar-radius-tr');
             }
         }
     }
