@@ -1,5 +1,9 @@
 # Vivaldi Tiled Tabs Visualizer Mod
 
+[![License: MIT](https://img.shields.io/github/license/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&color=blue)](LICENSE)
+[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&label=openssf%20scorecard)](https://scorecard.dev/viewer/?uri=github.com/ashu-tosh-kumar/vivaldi-tile-viz)
+<!-- OpenSSF Best Practices: register at https://www.bestpractices.dev/en/projects/new then add: [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/PROJECT_ID/badge)](https://www.bestpractices.dev/projects/PROJECT_ID) -->
+
 <img width="1438" height="73" alt="Screenshot 2026-06-26 at 11 56 50 PM" src="https://github.com/user-attachments/assets/329fa19d-8fd1-4f82-ac24-5e3ed203bd37" />
 
 <br/><br/>
