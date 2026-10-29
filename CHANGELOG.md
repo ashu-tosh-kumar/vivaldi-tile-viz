@@ -2,7 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-## [v1.1.0]
+## [Unreleased]
+
+### Added
+
+- **CI**: GitHub Actions workflow running lint and tests on every pull request and push to `main`.
+- **Lint script**: `pnpm lint` (ESLint 8 with `standard`) is now a declared dev dependency and script.
+- **Supply-chain checks**: Dependency Review and OpenSSF Scorecard workflows, grouped Dependabot updates for npm and GitHub Actions, and status/security badges in the README.
+- **AI agent instructions**: A single vendor-neutral `AGENTS.md`, with thin `CLAUDE.md`, `GEMINI.md` and `.github/copilot-instructions.md` wrappers pointing to it. Replaces `.agents/AGENTS.md` and `.cursorrules`.
+- **Lockfile**: `pnpm-lock.yaml` for reproducible installs.
+
+### Changed
+
+- **Code formatting**: Reformatted one destructuring in `assets/custom.js` to satisfy ESLint. No behavior change.
+- **Dev dependencies**: Bumped `vitest` to v5.
+
+---
+
+## [v1.1.0] - 2026-06-27
 
 ### Added
 
@@ -20,7 +37,7 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [v1.0.0]
+## [v1.0.0] - 2026-06-26
 
 ### Added
 
