@@ -182,10 +182,19 @@
 
     // ── chrome.tabs API bridge ───────────────────────────────────────
 
+    /**
+     * Resolves the current window's tabs, or null when the query failed
+     * (API unavailable, chrome.runtime.lastError, or a non-array result).
+     * Callers must treat null as "unknown" and keep existing state, not as
+     * "no tabs", or one transient failure would strip every indicator.
+     */
     function queryChromeTabs() {
         return new Promise(resolve => {
-            if (typeof chrome === 'undefined' || !chrome.tabs) { resolve([]); return; }
-            chrome.tabs.query({ currentWindow: true }, tabs => resolve(tabs || []));
+            if (typeof chrome === 'undefined' || !chrome.tabs) { resolve(null); return; }
+            chrome.tabs.query({ currentWindow: true }, tabs => {
+                const failed = chrome.runtime && chrome.runtime.lastError;
+                resolve(!failed && Array.isArray(tabs) ? tabs : null);
+            });
         });
     }
 
@@ -220,6 +229,7 @@
         flushPendingColors();
 
         const chromeTabs = await queryChromeTabs();
+        if (!chromeTabs) { log('chrome.tabs.query failed; keeping current state'); return; }
         const groups = buildTilingGroups(chromeTabs);
 
         const tabToGroup = new Map();
