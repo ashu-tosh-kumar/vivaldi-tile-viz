@@ -52,3 +52,43 @@ describe('updateTiledTabs when the tab query fails', () => {
         expect(m.getGroupColorMap().has('g1')).toBe(false);
     });
 });
+
+describe('runUpdate serialisation', () => {
+    it('never runs two updates concurrently and re-schedules a queued one', async () => {
+        let inFlight = 0, maxInFlight = 0, calls = 0;
+        const releases = [];
+        const timers = [];
+        const m = loadModule({
+            chrome: {
+                tabs: {
+                    query: (_, cb) => {
+                        calls++; inFlight++; maxInFlight = Math.max(maxInFlight, inFlight);
+                        releases.push(() => { inFlight--; cb([{ id: 1 }]); });
+                    },
+                },
+            },
+            globals: { setTimeout: (fn) => { timers.push(fn); return timers.length; } },
+        });
+
+        const first = m.runUpdate();
+        const second = m.runUpdate(); // arrives while first is awaiting the query
+        await second;
+        expect(calls).toBe(1);
+
+        releases.shift()();
+        await first;
+        expect(maxInFlight).toBe(1);
+        // The overlapping request must not be dropped: a follow-up is scheduled.
+        expect(timers.length).toBeGreaterThan(0);
+    });
+
+    it('releases the lock even if the update throws', async () => {
+        let n = 0;
+        const m = loadModule({
+            chrome: { tabs: { query: (_, cb) => { n++; if (n === 1) throw new Error('x'); cb([{ id: 1 }]); } } },
+        });
+        await m.runUpdate();
+        await m.runUpdate();
+        expect(n).toBe(2);
+    });
+});

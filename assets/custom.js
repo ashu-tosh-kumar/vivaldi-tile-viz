@@ -345,9 +345,30 @@
     // ── Lifecycle ────────────────────────────────────────────────────
 
     let updateTimeout = null;
+    let updateRunning = false;
+    let updateQueued = false;
+
+    /**
+     * Run one update, never concurrently with another. A request that arrives
+     * while an update is in flight is remembered and re-scheduled afterwards,
+     * so it isn't dropped and two passes can't interleave their DOM writes.
+     */
+    async function runUpdate() {
+        if (updateRunning) { updateQueued = true; return; }
+        updateRunning = true;
+        try {
+            await updateTiledTabs();
+        } catch (err) {
+            log('update failed', err);
+        } finally {
+            updateRunning = false;
+            if (updateQueued) { updateQueued = false; scheduleUpdate(); }
+        }
+    }
+
     function scheduleUpdate() {
         if (updateTimeout) return;
-        updateTimeout = setTimeout(() => { updateTiledTabs(); updateTimeout = null; }, 150);
+        updateTimeout = setTimeout(() => { updateTimeout = null; runUpdate(); }, 150);
     }
 
     function attachTabBarObservers() {
@@ -391,10 +412,10 @@
         log('TileViz initialized');
         attachTabBarObservers();
         attachChromeTabEvents();
-        setTimeout(updateTiledTabs, 1000);
+        setTimeout(runUpdate, 1000);
         // Infrequent safety net — covers edge cases MutationObserver may miss
         // (e.g. theme color changes that affect clash detection).
-        setInterval(updateTiledTabs, 15000);
+        setInterval(runUpdate, 15000);
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
