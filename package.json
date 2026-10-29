@@ -3,10 +3,16 @@
   "type": "module",
   "packageManager": "pnpm@10.12.4",
   "scripts": {
+    "lint": "eslint assets/custom.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.6.0",
     "vitest": "^5.0.0"
   }
 }

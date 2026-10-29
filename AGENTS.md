@@ -11,7 +11,7 @@ The script runs inside Vivaldi's privileged UI page (`window.html` / `browser.ht
 ## Commands
 
 - `pnpm test` — run the vitest suite once (`pnpm test:watch` for watch mode).
-- Lint: `.eslintrc.yml` (eslint `standard` + overrides) is the style source of truth, but `eslint` is **not** in `devDependencies`, so `pnpm exec eslint` fails unless it is installed. Do not claim a lint pass you did not run.
+- `pnpm lint` — eslint on `assets/custom.js`. `.eslintrc.yml` (eslint 8 + `standard`) is the style source of truth. CI runs both lint and tests (`.github/workflows/ci.yml`), so run them before finishing.
 - Markdown follows `.markdownlint.json`.
 
 ## Testing quirk
