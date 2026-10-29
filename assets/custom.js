@@ -206,8 +206,13 @@
         const groups = new Map();
         chromeTabs.forEach(ct => {
             if (!ct.vivExtData) return;
-            let ext;
-            try { ext = JSON.parse(ct.vivExtData); } catch { return; }
+            // Normally a JSON string; tolerate an already-parsed object in case a
+            // Vivaldi version changes the shape, rather than silently finding no groups.
+            let ext = ct.vivExtData;
+            if (typeof ext === 'string') {
+                try { ext = JSON.parse(ext); } catch { log('unparseable vivExtData on tab', ct.id); return; }
+            }
+            if (!ext || typeof ext !== 'object') return;
             const tilingId = ext.tiling && ext.tiling.id;
             if (!tilingId) return;
             if (!groups.has(tilingId)) groups.set(tilingId, new Set());

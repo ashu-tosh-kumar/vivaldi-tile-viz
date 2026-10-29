@@ -92,3 +92,19 @@ describe('runUpdate serialisation', () => {
         expect(n).toBe(2);
     });
 });
+
+describe('buildTilingGroups vivExtData shapes', () => {
+    it('accepts vivExtData that is already a parsed object', () => {
+        const m = loadModule();
+        const groups = m.buildTilingGroups([
+            { id: 1, vivExtData: { tiling: { id: 't1' } } },
+            { id: 2, vivExtData: JSON.stringify({ tiling: { id: 't1' } }) },
+        ]);
+        expect(Array.from(groups.get('t1')).sort()).toEqual(['1', '2']);
+    });
+
+    it('ignores non-object, non-string vivExtData', () => {
+        const m = loadModule();
+        expect(m.buildTilingGroups([{ id: 1, vivExtData: 42 }, { id: 2, vivExtData: null }]).size).toBe(0);
+    });
+});
