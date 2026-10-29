@@ -303,6 +303,13 @@
                 wrapper.style.setProperty('--tile-bar-inset-right', insetRight + 'px');
                 wrapper.style.setProperty('--tile-bar-radius-tl', radiusTl);
                 wrapper.style.setProperty('--tile-bar-radius-tr', radiusTr);
+            } else {
+                // No .tab-wrapper in this layout/version: host the bar on the tab
+                // itself rather than silently rendering nothing.
+                log('no .tab-wrapper for tab', ident.id, '- using tab as bar host');
+                tabEl.classList.add('tab-tiled-self');
+                tabEl.classList.toggle('tab-tiled-self-stripe', colorStyle.pattern);
+                tabEl.style.setProperty('--tile-group-color', colorStyle.color);
             }
         });
 
@@ -313,7 +320,11 @@
 
     function cleanupTab(tab) {
         if (tab.classList.contains('tab-tiled-link')) {
-            tab.classList.remove('tab-tiled-link', 'pattern-stripe', 'tiled-group-hover');
+            tab.classList.remove(
+                'tab-tiled-link', 'pattern-stripe', 'tiled-group-hover',
+                'tab-tiled-self', 'tab-tiled-self-stripe'
+            );
+            tab.style.removeProperty('--tile-group-color');
             tabStateMap.delete(tab);
             const wrapper = tab.closest('.tab-wrapper');
             if (wrapper) {

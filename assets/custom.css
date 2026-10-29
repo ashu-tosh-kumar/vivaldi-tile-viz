@@ -73,3 +73,46 @@
             rgba(0, 0, 0, 0.4) 6px,
             rgba(0, 0, 0, 0.4) 12px) !important;
 }
+
+/* ── Fallback: no .tab-wrapper around the tab ───────────────────── */
+/* Same bar, hosted on the tab itself (JS adds .tab-tiled-self only when
+   closest('.tab-wrapper') is null). The tab already clips its own corners. */
+.tab.tab-tiled-self::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 3px !important;
+    background-color: var(--tile-group-color) !important;
+    z-index: 9999 !important;
+    opacity: 0.65 !important;
+    pointer-events: none !important;
+    transition: opacity 0.15s ease !important;
+}
+
+.tab.tab-tiled-self.active::after,
+.tab.tab-tiled-self.tiled-group-hover::after {
+    opacity: 1 !important;
+}
+
+#browser.private .tab.tab-tiled-self::after {
+    filter: brightness(0.7) saturate(0.8) !important;
+}
+
+.tab.tab-tiled-self.tab-tiled-self-stripe::after {
+    background: repeating-linear-gradient(45deg,
+            var(--tile-group-color),
+            var(--tile-group-color) 6px,
+            rgba(255, 255, 255, 0.4) 6px,
+            rgba(255, 255, 255, 0.4) 12px) !important;
+}
+
+#browser.theme-dark .tab.tab-tiled-self.tab-tiled-self-stripe::after {
+    background: repeating-linear-gradient(45deg,
+            var(--tile-group-color),
+            var(--tile-group-color) 6px,
+            rgba(0, 0, 0, 0.4) 6px,
+            rgba(0, 0, 0, 0.4) 12px) !important;
+}
