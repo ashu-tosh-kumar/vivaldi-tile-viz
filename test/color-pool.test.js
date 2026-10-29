@@ -268,3 +268,78 @@ describe('theme colour clash avoidance', () => {
         expect(m.getColorPool()).toContain(PALETTE[0]);
     });
 });
+
+// ── Stale clash re-check (theme changes after assignment) ────────────────────
+
+function loadWithTheme(initial) {
+    const theme = { value: initial };
+    const m = loadModule({
+        document: { getElementById: (id) => (id === 'browser' ? {} : null) },
+        window: {
+            getComputedStyle: () => ({
+                getPropertyValue: (prop) =>
+                    prop === '--colorAccentBg' ? theme.value : '',
+            }),
+        },
+    });
+    return { m, theme };
+}
+
+describe('recheckGroupColor', () => {
+    it('reassigns a group whose cached colour now clashes with the theme', () => {
+        const { m, theme } = loadWithTheme('#000000');
+        const before = m.assignColorToGroup('g1');
+        expect(before.color).toBe(PALETTE[0]);
+
+        // Accent colour changes (e.g. active tab switched) to match the bar.
+        theme.value = PALETTE[0];
+        m.recheckGroupColor('g1');
+
+        const after = m.getGroupColorMap().get('g1');
+        expect(after.color).not.toBe(PALETTE[0]);
+        expect(m.colorDistance(after.color, PALETTE[0])).toBeGreaterThanOrEqual(50);
+    });
+
+    it('keeps the cached colour when it still contrasts with the theme', () => {
+        const { m, theme } = loadWithTheme('#000000');
+        const before = m.assignColorToGroup('g1');
+        theme.value = '#ffffff';
+        m.recheckGroupColor('g1');
+        expect(m.getGroupColorMap().get('g1')).toBe(before);
+    });
+
+    it('does not hand the clashed colour to another group at the same time', () => {
+        const { m, theme } = loadWithTheme('#000000');
+        m.assignColorToGroup('g1');
+        theme.value = PALETTE[0];
+        m.recheckGroupColor('g1');
+        const other = m.assignColorToGroup('g2');
+        expect(other.color).not.toBe(PALETTE[0]);
+        expect(other.color).not.toBe(m.getGroupColorMap().get('g1').color);
+    });
+
+    it('is a no-op for an unknown group or an unreadable theme', () => {
+        const { m, theme } = loadWithTheme('#000000');
+        m.recheckGroupColor('missing');
+        m.assignColorToGroup('g1');
+        theme.value = '';
+        const before = m.getGroupColorMap().get('g1');
+        m.recheckGroupColor('g1');
+        expect(m.getGroupColorMap().get('g1')).toBe(before);
+    });
+});
+
+describe('getThemeColor parsing', () => {
+    it.each([
+        ['#112233', '#112233'],
+        ['rgb(17, 34, 51)', '#112233'],
+        ['rgba(17, 34, 51, 0.5)', '#112233'],
+        ['#112233cc', '#112233'],
+    ])('parses %s', (input, expected) => {
+        expect(loadWithTheme(input).m.getThemeColor()).toBe(expected);
+    });
+
+    it('returns null for formats it cannot parse instead of a wrong colour', () => {
+        expect(loadWithTheme('hsl(210 50% 40%)').m.getThemeColor()).toBeNull();
+    });
+});

@@ -72,10 +72,17 @@
         const s = window.getComputedStyle(browser);
         let v = s.getPropertyValue('--colorAccentBg').trim() || s.getPropertyValue('--colorBg').trim();
         if (!v) return null;
-        if (v.startsWith('#')) return v;
-        const m = v.match(/\d+/g);
-        if (m && m.length >= 3)
-            return "#" + m.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join("");
+        // #rgb / #rrggbb, plus the alpha forms (#rgba / #rrggbbaa) with alpha dropped.
+        if (/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) {
+            if (v.length === 5) return v.slice(0, 4);
+            if (v.length === 9) return v.slice(0, 7);
+            return v;
+        }
+        // Only rgb()/rgba() are understood; anything else (hsl, color-mix, oklch…)
+        // returns null so clash detection is skipped rather than fed a wrong colour.
+        const m = v.match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i);
+        if (m)
+            return "#" + m.slice(1, 4).map(x => Math.min(255, parseInt(x)).toString(16).padStart(2, '0')).join("");
         return null;
     }
 
@@ -101,6 +108,24 @@
         groupColorMap.set(groupId, d);
         assignCount++;
         return d;
+    }
+
+    /**
+     * Re-validate a group's cached color against the CURRENT theme color.
+     * The clash check in assignColorToGroup only runs at first assignment, but
+     * the theme/accent color can change afterwards (e.g. accent color follows
+     * the active tab), leaving the bar the same color as the tab behind it.
+     * A clashing group is reassigned; its old color returns to the pool directly
+     * (not via pendingPool) because the group is re-picking in this same step.
+     */
+    function recheckGroupColor(groupId) {
+        const d = groupColorMap.get(groupId);
+        if (!d) return;
+        const theme = getThemeColor();
+        if (!theme || colorDistance(d.color, theme) >= 50) return;
+        groupColorMap.delete(groupId);
+        if (!d.pattern) colorPool.push(d.color);
+        assignColorToGroup(groupId);
     }
 
     function releaseGroupColor(groupId) {
@@ -199,6 +224,7 @@
 
         const tabToGroup = new Map();
         groups.forEach((members, tilingId) => {
+            recheckGroupColor(tilingId);
             members.forEach(id => tabToGroup.set(id, tilingId));
         });
 
@@ -325,6 +351,16 @@
                 attributeFilter: ['class', 'style', 'data-tab-id'],
             });
         });
+        // Theme/accent colors are set as CSS variables on #browser's own style
+        // or class (e.g. accent follows the active tab). Watch only that element
+        // (no subtree) so recheckGroupColor runs promptly without extra noise.
+        const browser = document.getElementById('browser');
+        if (browser) {
+            new MutationObserver(scheduleUpdate).observe(browser, {
+                attributes: true,
+                attributeFilter: ['class', 'style'],
+            });
+        }
         log(`TileViz: observing ${containers.length} tab bar container(s)`);
     }
 

@@ -33,6 +33,8 @@ const EXPORT_BLOCK = `
         __TEST_EXPORTS__.assignColorToGroup = assignColorToGroup;
         __TEST_EXPORTS__.releaseGroupColor  = releaseGroupColor;
         __TEST_EXPORTS__.flushPendingColors = flushPendingColors;
+        __TEST_EXPORTS__.recheckGroupColor  = recheckGroupColor;
+        __TEST_EXPORTS__.getThemeColor      = getThemeColor;
 
         // State readers (return copies so tests can snapshot without aliasing)
         __TEST_EXPORTS__.getColorPool    = () => [...colorPool];

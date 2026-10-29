@@ -12,6 +12,11 @@ All notable changes to this project will be documented in this file.
 - **AI agent instructions**: A single vendor-neutral `AGENTS.md`, with thin `CLAUDE.md`, `GEMINI.md` and `.github/copilot-instructions.md` wrappers pointing to it. Replaces `.agents/AGENTS.md` and `.cursorrules`.
 - **Lockfile**: `pnpm-lock.yaml` for reproducible installs.
 
+### Fixed
+
+- **Indicator blending into the theme (#8)**: A tile group's color was checked against the theme color only once, when first assigned. If the theme or accent color changed afterwards (for example accent color following the active tab), the bar could end up the same color as the tab behind it and appear to vanish. Colors are now re-validated on every update and reassigned on clash, and changes to `#browser`'s class/style trigger an update.
+- **Theme color parsing**: `#rrggbbaa`/`#rgba` and `rgb()`/`rgba()` theme values are read correctly; unsupported formats (e.g. `hsl()`) now skip clash detection instead of producing a wrong color.
+
 ### Changed
 
 - **Code formatting**: Reformatted one destructuring in `assets/custom.js` to satisfy ESLint. No behavior change.
