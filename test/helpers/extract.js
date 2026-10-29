@@ -33,6 +33,15 @@ const EXPORT_BLOCK = `
         __TEST_EXPORTS__.assignColorToGroup = assignColorToGroup;
         __TEST_EXPORTS__.releaseGroupColor  = releaseGroupColor;
         __TEST_EXPORTS__.flushPendingColors = flushPendingColors;
+        __TEST_EXPORTS__.recheckGroupColor  = recheckGroupColor;
+        __TEST_EXPORTS__.getThemeColor      = getThemeColor;
+
+        // Lifecycle / update pipeline
+        __TEST_EXPORTS__.queryChromeTabs        = queryChromeTabs;
+        __TEST_EXPORTS__.updateTiledTabs        = updateTiledTabs;
+        __TEST_EXPORTS__.runUpdate              = typeof runUpdate === 'function' ? runUpdate : undefined;
+        __TEST_EXPORTS__.ensureObservers        = typeof ensureObservers === 'function' ? ensureObservers : undefined;
+        __TEST_EXPORTS__.attachChromeTabEvents  = attachChromeTabEvents;
 
         // State readers (return copies so tests can snapshot without aliasing)
         __TEST_EXPORTS__.getColorPool    = () => [...colorPool];
@@ -65,7 +74,8 @@ if (patched === src) {
 /**
  * Returns a fresh module instance with all testable internals exposed.
  * @param {object} overrides  Optional per-key mock overrides for the vm
- *   sandbox.  Supported keys: `document`, `window`, `chrome`.  Each value is
+ *   sandbox.  Supported keys: `document`, `window`, `chrome`, plus `globals` for
+ *   top-level sandbox overrides (setTimeout, MutationObserver, …).  Each value is
  *   shallow-merged over the default mock so you only need to supply what you
  *   want to change.
  */
@@ -107,7 +117,10 @@ export function loadModule(overrides = {}) {
         console: { log: () => { } },
         setTimeout: () => { },
         setInterval: () => { },
-        MutationObserver: class { observe() { } },
+        MutationObserver: class { observe() { } disconnect() { } },
+
+        // Extra/overriding sandbox globals (e.g. setTimeout, MutationObserver)
+        ...(overrides.globals || {}),
 
         __TEST_EXPORTS__,
     });

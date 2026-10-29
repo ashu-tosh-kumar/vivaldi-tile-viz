@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [v1.1.1] - 2026-10-29
 
 ### Added
 
@@ -12,8 +12,20 @@ All notable changes to this project will be documented in this file.
 - **AI agent instructions**: A single vendor-neutral `AGENTS.md`, with thin `CLAUDE.md`, `GEMINI.md` and `.github/copilot-instructions.md` wrappers pointing to it. Replaces `.agents/AGENTS.md` and `.cursorrules`.
 - **Lockfile**: `pnpm-lock.yaml` for reproducible installs.
 
+### Fixed
+
+- **Indicator blending into the theme (#8)**: A tile group's color was checked against the theme color only once, when first assigned. If the theme or accent color changed afterwards (for example accent color following the active tab), the bar could end up the same color as the tab behind it and appear to vanish. Colors are now re-validated on every update and reassigned on clash, and changes to `#browser`'s class/style trigger an update.
+- **Indicators wiped by a failed tab query**: A failed `chrome.tabs.query` was treated as "no tabs", removing every bar and releasing all colors. The update is now skipped and current state kept.
+- **Overlapping updates**: Bursts of tab events could run two update passes at once. Updates are now serialised, and a request arriving mid-update is re-run afterwards.
+- **Observers lost on UI re-mount**: Observers are re-attached whenever Vivaldi replaces the tab bar (e.g. toggling vertical tabs), instead of staying on a detached node.
+- **`vivExtData` shape**: An already-parsed `vivExtData` object is accepted instead of silently yielding no tile groups.
+- **Layouts without `.tab-wrapper`**: The bar is hosted on the tab itself when no wrapper exists, instead of rendering nothing. (Untested in a live Vivaldi.)
+- **Slow activation**: The first update runs ~150ms after init (was 1s), and tab activation, creation, move and replacement now trigger updates.
+- **Theme color parsing**: `#rrggbbaa`/`#rgba` and `rgb()`/`rgba()` theme values are read correctly; unsupported formats (e.g. `hsl()`) now skip clash detection instead of producing a wrong color.
+
 ### Changed
 
+- **README install instructions**: The macOS path used a non-existent `Versions/A` folder; it now points to the version-named folder. Clarified that the Custom UI Modifications folder loads CSS only (not `custom.js`), that `custom.js` must be re-copied after every Vivaldi update, and added a "no colored bars" troubleshooting checklist.
 - **Code formatting**: Reformatted one destructuring in `assets/custom.js` to satisfy ESLint. No behavior change.
 - **Dev dependencies**: Bumped `vitest` to v5.
 

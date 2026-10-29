@@ -72,10 +72,17 @@
         const s = window.getComputedStyle(browser);
         let v = s.getPropertyValue('--colorAccentBg').trim() || s.getPropertyValue('--colorBg').trim();
         if (!v) return null;
-        if (v.startsWith('#')) return v;
-        const m = v.match(/\d+/g);
-        if (m && m.length >= 3)
-            return "#" + m.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join("");
+        // #rgb / #rrggbb, plus the alpha forms (#rgba / #rrggbbaa) with alpha dropped.
+        if (/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) {
+            if (v.length === 5) return v.slice(0, 4);
+            if (v.length === 9) return v.slice(0, 7);
+            return v;
+        }
+        // Only rgb()/rgba() are understood; anything else (hsl, color-mix, oklch…)
+        // returns null so clash detection is skipped rather than fed a wrong colour.
+        const m = v.match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i);
+        if (m)
+            return "#" + m.slice(1, 4).map(x => Math.min(255, parseInt(x)).toString(16).padStart(2, '0')).join("");
         return null;
     }
 
@@ -101,6 +108,24 @@
         groupColorMap.set(groupId, d);
         assignCount++;
         return d;
+    }
+
+    /**
+     * Re-validate a group's cached color against the CURRENT theme color.
+     * The clash check in assignColorToGroup only runs at first assignment, but
+     * the theme/accent color can change afterwards (e.g. accent color follows
+     * the active tab), leaving the bar the same color as the tab behind it.
+     * A clashing group is reassigned; its old color returns to the pool directly
+     * (not via pendingPool) because the group is re-picking in this same step.
+     */
+    function recheckGroupColor(groupId) {
+        const d = groupColorMap.get(groupId);
+        if (!d) return;
+        const theme = getThemeColor();
+        if (!theme || colorDistance(d.color, theme) >= 50) return;
+        groupColorMap.delete(groupId);
+        if (!d.pattern) colorPool.push(d.color);
+        assignColorToGroup(groupId);
     }
 
     function releaseGroupColor(groupId) {
@@ -157,10 +182,19 @@
 
     // ── chrome.tabs API bridge ───────────────────────────────────────
 
+    /**
+     * Resolves the current window's tabs, or null when the query failed
+     * (API unavailable, chrome.runtime.lastError, or a non-array result).
+     * Callers must treat null as "unknown" and keep existing state, not as
+     * "no tabs", or one transient failure would strip every indicator.
+     */
     function queryChromeTabs() {
         return new Promise(resolve => {
-            if (typeof chrome === 'undefined' || !chrome.tabs) { resolve([]); return; }
-            chrome.tabs.query({ currentWindow: true }, tabs => resolve(tabs || []));
+            if (typeof chrome === 'undefined' || !chrome.tabs) { resolve(null); return; }
+            chrome.tabs.query({ currentWindow: true }, tabs => {
+                const failed = chrome.runtime && chrome.runtime.lastError;
+                resolve(!failed && Array.isArray(tabs) ? tabs : null);
+            });
         });
     }
 
@@ -172,8 +206,13 @@
         const groups = new Map();
         chromeTabs.forEach(ct => {
             if (!ct.vivExtData) return;
-            let ext;
-            try { ext = JSON.parse(ct.vivExtData); } catch { return; }
+            // Normally a JSON string; tolerate an already-parsed object in case a
+            // Vivaldi version changes the shape, rather than silently finding no groups.
+            let ext = ct.vivExtData;
+            if (typeof ext === 'string') {
+                try { ext = JSON.parse(ext); } catch { log('unparseable vivExtData on tab', ct.id); return; }
+            }
+            if (!ext || typeof ext !== 'object') return;
             const tilingId = ext.tiling && ext.tiling.id;
             if (!tilingId) return;
             if (!groups.has(tilingId)) groups.set(tilingId, new Set());
@@ -195,10 +234,12 @@
         flushPendingColors();
 
         const chromeTabs = await queryChromeTabs();
+        if (!chromeTabs) { log('chrome.tabs.query failed; keeping current state'); return; }
         const groups = buildTilingGroups(chromeTabs);
 
         const tabToGroup = new Map();
         groups.forEach((members, tilingId) => {
+            recheckGroupColor(tilingId);
             members.forEach(id => tabToGroup.set(id, tilingId));
         });
 
@@ -262,6 +303,13 @@
                 wrapper.style.setProperty('--tile-bar-inset-right', insetRight + 'px');
                 wrapper.style.setProperty('--tile-bar-radius-tl', radiusTl);
                 wrapper.style.setProperty('--tile-bar-radius-tr', radiusTr);
+            } else {
+                // No .tab-wrapper in this layout/version: host the bar on the tab
+                // itself rather than silently rendering nothing.
+                log('no .tab-wrapper for tab', ident.id, '- using tab as bar host');
+                tabEl.classList.add('tab-tiled-self');
+                tabEl.classList.toggle('tab-tiled-self-stripe', colorStyle.pattern);
+                tabEl.style.setProperty('--tile-group-color', colorStyle.color);
             }
         });
 
@@ -272,7 +320,11 @@
 
     function cleanupTab(tab) {
         if (tab.classList.contains('tab-tiled-link')) {
-            tab.classList.remove('tab-tiled-link', 'pattern-stripe', 'tiled-group-hover');
+            tab.classList.remove(
+                'tab-tiled-link', 'pattern-stripe', 'tiled-group-hover',
+                'tab-tiled-self', 'tab-tiled-self-stripe'
+            );
+            tab.style.removeProperty('--tile-group-color');
             tabStateMap.delete(tab);
             const wrapper = tab.closest('.tab-wrapper');
             if (wrapper) {
@@ -309,30 +361,81 @@
     // ── Lifecycle ────────────────────────────────────────────────────
 
     let updateTimeout = null;
-    function scheduleUpdate() {
-        if (updateTimeout) return;
-        updateTimeout = setTimeout(() => { updateTiledTabs(); updateTimeout = null; }, 150);
+    let updateRunning = false;
+    let updateQueued = false;
+
+    /**
+     * Run one update, never concurrently with another. A request that arrives
+     * while an update is in flight is remembered and re-scheduled afterwards,
+     * so it isn't dropped and two passes can't interleave their DOM writes.
+     */
+    async function runUpdate() {
+        if (updateRunning) { updateQueued = true; return; }
+        updateRunning = true;
+        try {
+            ensureObservers();
+            await updateTiledTabs();
+        } catch (err) {
+            log('update failed', err);
+        } finally {
+            updateRunning = false;
+            if (updateQueued) { updateQueued = false; scheduleUpdate(); }
+        }
     }
 
-    function attachTabBarObservers() {
+    function scheduleUpdate() {
+        if (updateTimeout) return;
+        updateTimeout = setTimeout(() => { updateTimeout = null; runUpdate(); }, 150);
+    }
+
+    // element -> MutationObserver, for every element currently being watched.
+    const observers = new Map();
+
+    function observeElement(el, options) {
+        const obs = new MutationObserver(scheduleUpdate);
+        obs.observe(el, options);
+        observers.set(el, obs);
+    }
+
+    /**
+     * Idempotently (re)attach observers. Vivaldi's React UI can replace the
+     * tab bar container (e.g. toggling vertical tabs or moving the tab bar); an
+     * observer on a detached node never fires again, so every update re-checks
+     * which containers exist now, observes new ones, and drops detached ones.
+     */
+    function ensureObservers() {
+        for (const [el, obs] of observers) {
+            if (el.isConnected === false) { obs.disconnect(); observers.delete(el); }
+        }
         const containers = getTabBarContainers();
         containers.forEach(container => {
-            new MutationObserver(scheduleUpdate).observe(container, {
+            if (observers.has(container)) return;
+            observeElement(container, {
                 childList: true, subtree: true,
                 attributes: true,
                 // vivExtData changes reach us via chrome.tabs events, not DOM attrs.
                 // Observe class/style for tab state, and data-tab-id as fallback id.
                 attributeFilter: ['class', 'style', 'data-tab-id'],
             });
+            log('observing tab bar container', container.id || container.className);
         });
-        log(`TileViz: observing ${containers.length} tab bar container(s)`);
+        // Theme/accent colors are set as CSS variables on #browser's own style
+        // or class (e.g. accent follows the active tab). Watch only that element
+        // (no subtree) so recheckGroupColor runs promptly without extra noise.
+        const browser = document.getElementById('browser');
+        if (browser && !observers.has(browser)) {
+            observeElement(browser, { attributes: true, attributeFilter: ['class', 'style'] });
+        }
     }
 
     function attachChromeTabEvents() {
         if (chromeTabsListenersAttached) return;
         if (typeof chrome === 'undefined' || !chrome.tabs) return;
-        // These fire when vivExtData (tiling) changes, tabs open/close, or move.
-        ['onUpdated', 'onRemoved', 'onAttached', 'onDetached'].forEach(evt => {
+        // These fire when vivExtData (tiling) changes, tabs open/close/move/switch.
+        [
+            'onUpdated', 'onRemoved', 'onAttached', 'onDetached',
+            'onActivated', 'onCreated', 'onMoved', 'onReplaced',
+        ].forEach(evt => {
             if (chrome.tabs[evt]) chrome.tabs[evt].addListener(scheduleUpdate);
         });
         chromeTabsListenersAttached = true;
@@ -343,12 +446,15 @@
         const browser = document.getElementById('browser');
         if (!browser) { setTimeout(init, 500); return; }
         log('TileViz initialized');
-        attachTabBarObservers();
+        ensureObservers();
         attachChromeTabEvents();
-        setTimeout(updateTiledTabs, 1000);
+        // First pass shortly after init instead of waiting a full second; the
+        // later pass catches a tab bar that renders after we attached.
+        scheduleUpdate();
+        setTimeout(runUpdate, 1000);
         // Infrequent safety net — covers edge cases MutationObserver may miss
         // (e.g. theme color changes that affect clash detection).
-        setInterval(updateTiledTabs, 15000);
+        setInterval(runUpdate, 15000);
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
