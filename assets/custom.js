@@ -235,8 +235,10 @@
         });
 
         // ── Write phase ──────────────────────────────────────────────
-        planned.forEach(({ tabEl, isGroup, ident, tilingId, wrapper,
-                           insetLeft, insetRight, radiusTl, radiusTr }) => {
+        planned.forEach(({
+            tabEl, isGroup, ident, tilingId, wrapper,
+            insetLeft, insetRight, radiusTl, radiusTr
+        }) => {
             if (isGroup) { cleanupTab(tabEl); return; }
             // Don't clean up tabs we can't identify — the favicon may be
             // temporarily absent during load or animation. Skip instead.

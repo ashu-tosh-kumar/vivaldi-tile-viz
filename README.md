@@ -32,8 +32,8 @@ Since Vivaldi's tab tiling engine is built into its custom browser interface, th
 
 Save both files from the [assets](assets/) directory on your computer:
 
-- [custom.css](file:///Users/ashutosh/projects/My/vivaldi-tile-viz/assets/custom.css) (Controls the visual accents)
-- [custom.js](file:///Users/ashutosh/projects/My/vivaldi-tile-viz/assets/custom.js) (Controls the connection logic)
+- [custom.css](assets/custom.css) (Controls the visual accents)
+- [custom.js](assets/custom.js) (Controls the connection logic)
 
 ### Step 2: Install the CSS Style Mod
 
@@ -69,6 +69,24 @@ Save both files from the [assets](assets/) directory on your computer:
 Completely close and restart Vivaldi. Open a few tabs, select two or more, right-click, and choose **Tile Tabs** to see the dynamic color-linking in action!
 
 For more detail on Vivaldi mods and community help, check out the [Official Vivaldi Modding Guide](https://forum.vivaldi.net/topic/10549/modding-vivaldi).
+
+## Development
+
+The mod itself has no runtime dependencies or build step. [Node.js](https://nodejs.org/) 22+ and [pnpm](https://pnpm.io/) are only needed to run the linter and tests.
+
+```bash
+pnpm install        # install dev dependencies (eslint, vitest)
+pnpm lint           # lint assets/custom.js with ESLint (standard + .eslintrc.yml)
+pnpm test           # run the test suite once
+pnpm test:watch     # re-run tests on file changes
+```
+
+Notes:
+
+- The tests load `assets/custom.js` into a Node `vm` sandbox with stubbed browser APIs (see `test/helpers/extract.js`), so no browser is required. If you add an internal function that tests need, expose it in that helper's `EXPORT_BLOCK`.
+- CI runs `pnpm lint` and `pnpm test` on every pull request. Run both before opening one.
+- The tests cannot confirm compatibility with Vivaldi's UI. To try changes live, copy `assets/custom.js` and `assets/custom.css` into your mods setup (see [Installation](#installation)), restart Vivaldi, then debug via `vivaldi://inspect/#apps` and set `TILE_DEBUG = true` in `custom.js` for console logs. See [CONTRIBUTING.md](CONTRIBUTING.md).
+- If `pnpm install` misbehaves because a parent directory contains a `pnpm-workspace.yaml`, use `pnpm install --ignore-workspace`.
 
 ---
 
