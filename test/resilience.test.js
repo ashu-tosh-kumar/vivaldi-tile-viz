@@ -108,3 +108,21 @@ describe('buildTilingGroups vivExtData shapes', () => {
         expect(m.buildTilingGroups([{ id: 1, vivExtData: 42 }, { id: 2, vivExtData: null }]).size).toBe(0);
     });
 });
+
+describe('attachChromeTabEvents', () => {
+    it('listens to activation, creation, move and replacement as well as updates', () => {
+        const events = ['onUpdated', 'onRemoved', 'onAttached', 'onDetached',
+            'onActivated', 'onCreated', 'onMoved', 'onReplaced'];
+        const attached = [];
+        const tabs = { query: (_, cb) => cb([]) };
+        events.forEach(e => { tabs[e] = { addListener: () => attached.push(e) }; });
+        const m = loadModule({ chrome: { tabs } });
+        m.attachChromeTabEvents();
+        expect(attached.sort()).toEqual([...events].sort());
+    });
+
+    it('skips events a Vivaldi version does not provide', () => {
+        const m = loadModule({ chrome: { tabs: { query: (_, cb) => cb([]), onUpdated: { addListener: () => { } } } } });
+        expect(() => m.attachChromeTabEvents()).not.toThrow();
+    });
+});

@@ -431,8 +431,11 @@
     function attachChromeTabEvents() {
         if (chromeTabsListenersAttached) return;
         if (typeof chrome === 'undefined' || !chrome.tabs) return;
-        // These fire when vivExtData (tiling) changes, tabs open/close, or move.
-        ['onUpdated', 'onRemoved', 'onAttached', 'onDetached'].forEach(evt => {
+        // These fire when vivExtData (tiling) changes, tabs open/close/move/switch.
+        [
+            'onUpdated', 'onRemoved', 'onAttached', 'onDetached',
+            'onActivated', 'onCreated', 'onMoved', 'onReplaced',
+        ].forEach(evt => {
             if (chrome.tabs[evt]) chrome.tabs[evt].addListener(scheduleUpdate);
         });
         chromeTabsListenersAttached = true;
@@ -445,6 +448,9 @@
         log('TileViz initialized');
         ensureObservers();
         attachChromeTabEvents();
+        // First pass shortly after init instead of waiting a full second; the
+        // later pass catches a tab bar that renders after we attached.
+        scheduleUpdate();
         setTimeout(runUpdate, 1000);
         // Infrequent safety net — covers edge cases MutationObserver may miss
         // (e.g. theme color changes that affect clash detection).
