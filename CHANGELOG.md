@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [v1.1.1] - 2026-10-29
 
 ### Added
 
@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- **README install instructions**: The macOS path used a non-existent `Versions/A` folder; it now points to the version-named folder. Clarified that the Custom UI Modifications folder loads CSS only (not `custom.js`), that `custom.js` must be re-copied after every Vivaldi update, and added a "no colored bars" troubleshooting checklist.
 - **Code formatting**: Reformatted one destructuring in `assets/custom.js` to satisfy ESLint. No behavior change.
 - **Dev dependencies**: Bumped `vitest` to v5.
 

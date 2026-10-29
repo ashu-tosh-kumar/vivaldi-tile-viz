@@ -47,11 +47,11 @@ Save both files from the [assets](assets/) directory on your computer:
 
 ### Step 3: Install the JavaScript Logic Mod
 
-*Note: This step requires adding the script reference to Vivaldi's core UI launcher. You may need to repeat this step after Vivaldi performs major browser updates.*
+*Note: The **Custom UI Modifications** folder from Step 2 only loads `.css` files. `custom.js` is **not** picked up from there; it must live next to `window.html` and be referenced from it. Each Vivaldi update installs into a new version folder, so you must **repeat this whole step (copy `custom.js` and re-add the script tag) after every Vivaldi update**.*
 
 1. Locate your Vivaldi application directory on your computer:
    - **Windows:** `C:\Users\<YourUser>\AppData\Local\Vivaldi\Application\<Version>\resources\vivaldi\`
-   - **macOS:** `/Applications/Vivaldi.app/Contents/Frameworks/Vivaldi Framework.framework/Versions/A/Resources/vivaldi/`
+   - **macOS:** `/Applications/Vivaldi.app/Contents/Frameworks/Vivaldi Framework.framework/Versions/<Version>/Resources/vivaldi/` (`<Version>` is the folder named after your installed Vivaldi version, e.g. `8.2.4133.94`)
    - **Linux:** `/opt/vivaldi/resources/vivaldi/`
 2. **Back up** the existing `window.html` file in that folder (just in case).
 3. Place the downloaded `custom.js` file into that same folder (right next to `window.html`).
@@ -69,6 +69,15 @@ Save both files from the [assets](assets/) directory on your computer:
 Completely close and restart Vivaldi. Open a few tabs, select two or more, right-click, and choose **Tile Tabs** to see the dynamic color-linking in action!
 
 For more detail on Vivaldi mods and community help, check out the [Official Vivaldi Modding Guide](https://forum.vivaldi.net/topic/10549/modding-vivaldi).
+
+### Troubleshooting: no colored bars at all
+
+Both files are required, and they are installed in different places. Check them in this order:
+
+1. **`custom.js` is next to `window.html`** in the folder for your *current* Vivaldi version, and `window.html` contains `<script src="custom.js"></script>`. A script tag without the file (common right after a Vivaldi update) fails silently.
+2. **`custom.css` is in the folder chosen under Settings → Appearance → Custom UI Modifications**, and "Allow for using CSS modifications" is enabled.
+3. You fully quit and reopened Vivaldi.
+4. Still nothing? Set `TILE_DEBUG = true` at the top of `custom.js`, restart, open `vivaldi://inspect/#apps`, click **Inspect** on the main Vivaldi entry, and look for `[TileViz]` lines in the Console. No lines means the script isn't loading; include the output if you open an issue.
 
 ## Development
 
