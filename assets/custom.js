@@ -357,6 +357,7 @@
         if (updateRunning) { updateQueued = true; return; }
         updateRunning = true;
         try {
+            ensureObservers();
             await updateTiledTabs();
         } catch (err) {
             log('update failed', err);
@@ -371,28 +372,44 @@
         updateTimeout = setTimeout(() => { updateTimeout = null; runUpdate(); }, 150);
     }
 
-    function attachTabBarObservers() {
+    // element -> MutationObserver, for every element currently being watched.
+    const observers = new Map();
+
+    function observeElement(el, options) {
+        const obs = new MutationObserver(scheduleUpdate);
+        obs.observe(el, options);
+        observers.set(el, obs);
+    }
+
+    /**
+     * Idempotently (re)attach observers. Vivaldi's React UI can replace the
+     * tab bar container (e.g. toggling vertical tabs or moving the tab bar); an
+     * observer on a detached node never fires again, so every update re-checks
+     * which containers exist now, observes new ones, and drops detached ones.
+     */
+    function ensureObservers() {
+        for (const [el, obs] of observers) {
+            if (el.isConnected === false) { obs.disconnect(); observers.delete(el); }
+        }
         const containers = getTabBarContainers();
         containers.forEach(container => {
-            new MutationObserver(scheduleUpdate).observe(container, {
+            if (observers.has(container)) return;
+            observeElement(container, {
                 childList: true, subtree: true,
                 attributes: true,
                 // vivExtData changes reach us via chrome.tabs events, not DOM attrs.
                 // Observe class/style for tab state, and data-tab-id as fallback id.
                 attributeFilter: ['class', 'style', 'data-tab-id'],
             });
+            log('observing tab bar container', container.id || container.className);
         });
         // Theme/accent colors are set as CSS variables on #browser's own style
         // or class (e.g. accent follows the active tab). Watch only that element
         // (no subtree) so recheckGroupColor runs promptly without extra noise.
         const browser = document.getElementById('browser');
-        if (browser) {
-            new MutationObserver(scheduleUpdate).observe(browser, {
-                attributes: true,
-                attributeFilter: ['class', 'style'],
-            });
+        if (browser && !observers.has(browser)) {
+            observeElement(browser, { attributes: true, attributeFilter: ['class', 'style'] });
         }
-        log(`TileViz: observing ${containers.length} tab bar container(s)`);
     }
 
     function attachChromeTabEvents() {
@@ -410,7 +427,7 @@
         const browser = document.getElementById('browser');
         if (!browser) { setTimeout(init, 500); return; }
         log('TileViz initialized');
-        attachTabBarObservers();
+        ensureObservers();
         attachChromeTabEvents();
         setTimeout(runUpdate, 1000);
         // Infrequent safety net — covers edge cases MutationObserver may miss
