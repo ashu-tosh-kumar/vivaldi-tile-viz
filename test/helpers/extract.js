@@ -26,8 +26,12 @@ const EXPORT_BLOCK = `
         // Pure functions
         __TEST_EXPORTS__.hexToRgb          = hexToRgb;
         __TEST_EXPORTS__.colorDistance     = colorDistance;
+        __TEST_EXPORTS__.getLuminance      = getLuminance;
+        __TEST_EXPORTS__.contrastRatio     = contrastRatio;
+        __TEST_EXPORTS__.hasColorClash     = hasColorClash;
         __TEST_EXPORTS__.buildTilingGroups = buildTilingGroups;
         __TEST_EXPORTS__.getTabIdentifier  = getTabIdentifier;
+        __TEST_EXPORTS__.isDebugEnabled    = isDebugEnabled;
 
         // Color-pool state machine
         __TEST_EXPORTS__.assignColorToGroup = assignColorToGroup;

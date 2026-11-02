@@ -3,10 +3,15 @@
  * Visual styling for linked/tiled tabs
  */
 
+/* ── Customization Variables ─────────────────────────────────────── */
+:root {
+    --tile-viz-thickness: 3px;
+}
+
 /* ── Positioning context ─────────────────────────────────────────── */
 /* Bar lives on .tab-wrapper (outside .tab's overflow:hidden clip).
    overflow:hidden + border-radius on the wrapper clips the ::after bar to
-   the tab's rounded shape. clip-path: inset(...round...) on the 3px bar
+   the tab's rounded shape. clip-path: inset(...round...) on the bar
    itself cannot work — CSS proportionally reduces the radius to 3px when
    it exceeds the element's half-height, matching neither the 14px tab curve
    nor producing the correct visual result at high rounding settings. */
@@ -20,7 +25,7 @@
     position: relative !important;
 }
 
-/* ── Primary Indicator: Solid top bar ───────────────────────────── */
+/* ── Primary Indicator: Solid bar (Top Tab Strip Default) ───────── */
 /* Anchored to .tab-wrapper so .tab's overflow:hidden cannot clip it.
    DPI inset vars keep the bar flush with the visual tab on non-integer
    display scales; wrapper's overflow:hidden handles corner rounding. */
@@ -31,13 +36,65 @@
     top: 0 !important;
     left: var(--tile-bar-inset-left, 0) !important;
     right: var(--tile-bar-inset-right, 0) !important;
-    height: 3px !important;
+    height: var(--tile-viz-thickness, 3px) !important;
     background-color: var(--tile-group-color) !important;
     z-index: 9999 !important;
     opacity: 1 !important;
     pointer-events: none !important;
     border-radius: 0 !important;
     transition: opacity 0.15s ease !important;
+}
+
+/* ── Bottom Tab Strip Layout ────────────────────────────────────── */
+#tabs-tabbar-container.bottom .tab-wrapper.tab-tiled-wrapper,
+.tabs-bottom .tab-wrapper.tab-tiled-wrapper,
+#tabs-container.bottom .tab-wrapper.tab-tiled-wrapper {
+    border-radius: 0 0 var(--tile-bar-radius-br, 0) var(--tile-bar-radius-bl, 0) !important;
+}
+
+#tabs-tabbar-container.bottom .tab-wrapper.tab-tiled-wrapper::after,
+.tabs-bottom .tab-wrapper.tab-tiled-wrapper::after,
+#tabs-container.bottom .tab-wrapper.tab-tiled-wrapper::after {
+    top: auto !important;
+    bottom: 0 !important;
+    height: var(--tile-viz-thickness, 3px) !important;
+}
+
+/* ── Vertical Tab Strip Layout (Left / Right) ────────────────────── */
+/* Left tab strip: vertical indicator along the inner edge (right) */
+#tabs-tabbar-container.left .tab-wrapper.tab-tiled-wrapper,
+.tabs-left .tab-wrapper.tab-tiled-wrapper,
+#tabs-container.left .tab-wrapper.tab-tiled-wrapper {
+    border-radius: var(--tile-bar-radius-tl, 0) 0 0 var(--tile-bar-radius-bl, 0) !important;
+}
+
+#tabs-tabbar-container.left .tab-wrapper.tab-tiled-wrapper::after,
+.tabs-left .tab-wrapper.tab-tiled-wrapper::after,
+#tabs-container.left .tab-wrapper.tab-tiled-wrapper::after {
+    top: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    right: 0 !important;
+    width: var(--tile-viz-thickness, 3px) !important;
+    height: auto !important;
+}
+
+/* Right tab strip: vertical indicator along the inner edge (left) */
+#tabs-tabbar-container.right .tab-wrapper.tab-tiled-wrapper,
+.tabs-right .tab-wrapper.tab-tiled-wrapper,
+#tabs-container.right .tab-wrapper.tab-tiled-wrapper {
+    border-radius: 0 var(--tile-bar-radius-tr, 0) var(--tile-bar-radius-br, 0) 0 !important;
+}
+
+#tabs-tabbar-container.right .tab-wrapper.tab-tiled-wrapper::after,
+.tabs-right .tab-wrapper.tab-tiled-wrapper::after,
+#tabs-container.right .tab-wrapper.tab-tiled-wrapper::after {
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    width: var(--tile-viz-thickness, 3px) !important;
+    height: auto !important;
 }
 
 /* ── Active vs. background contrast ────────────────────────────── */
@@ -84,12 +141,42 @@
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    height: 3px !important;
+    height: var(--tile-viz-thickness, 3px) !important;
     background-color: var(--tile-group-color) !important;
     z-index: 9999 !important;
     opacity: 0.65 !important;
     pointer-events: none !important;
     transition: opacity 0.15s ease !important;
+}
+
+#tabs-tabbar-container.bottom .tab.tab-tiled-self::after,
+.tabs-bottom .tab.tab-tiled-self::after,
+#tabs-container.bottom .tab.tab-tiled-self::after {
+    top: auto !important;
+    bottom: 0 !important;
+    height: var(--tile-viz-thickness, 3px) !important;
+}
+
+#tabs-tabbar-container.left .tab.tab-tiled-self::after,
+.tabs-left .tab.tab-tiled-self::after,
+#tabs-container.left .tab.tab-tiled-self::after {
+    top: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    right: 0 !important;
+    width: var(--tile-viz-thickness, 3px) !important;
+    height: auto !important;
+}
+
+#tabs-tabbar-container.right .tab.tab-tiled-self::after,
+.tabs-right .tab.tab-tiled-self::after,
+#tabs-container.right .tab.tab-tiled-self::after {
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    width: var(--tile-viz-thickness, 3px) !important;
+    height: auto !important;
 }
 
 .tab.tab-tiled-self.active::after,

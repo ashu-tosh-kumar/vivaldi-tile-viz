@@ -22,8 +22,18 @@
     'use strict';
 
     const TILE_DEBUG = false;
+    function isDebugEnabled() {
+        if (TILE_DEBUG) return true;
+        if (typeof window !== 'undefined' && window.__TILE_VIZ_DEBUG__ === true) return true;
+        if (typeof document !== 'undefined' && document.documentElement &&
+            document.documentElement.dataset &&
+            document.documentElement.dataset.tilevizDebug === 'true') {
+            return true;
+        }
+        return false;
+    }
     function log(...args) {
-        if (TILE_DEBUG) console.log('[TileViz]', ...args);
+        if (isDebugEnabled()) console.log('[TileViz]', ...args);
     }
 
     const TILE_PALETTE = [
@@ -66,6 +76,31 @@
         return Math.sqrt((r2 - r1) ** 2 + (g2 - g1) ** 2 + (b2 - b1) ** 2);
     }
 
+    function getLuminance(rgb) {
+        const a = rgb.map(v => {
+            const s = v / 255;
+            return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+    }
+
+    function contrastRatio(hex1, hex2) {
+        const lum1 = getLuminance(hexToRgb(hex1));
+        const lum2 = getLuminance(hexToRgb(hex2));
+        const brightest = Math.max(lum1, lum2);
+        const darkest = Math.min(lum1, lum2);
+        return (brightest + 0.05) / (darkest + 0.05);
+    }
+
+    function hasColorClash(color, theme) {
+        if (!theme) return false;
+        // Euclidean RGB distance catches close hue clashes
+        if (colorDistance(color, theme) < 50) return true;
+        // WCAG relative luminance contrast: prevent bright colors from vanishing on light themes
+        if (contrastRatio(color, theme) < 1.35) return true;
+        return false;
+    }
+
     function getThemeColor() {
         const browser = document.getElementById('browser');
         if (!browser) return null;
@@ -99,7 +134,7 @@
         let isPattern = false, color, found = false, clashed = [];
         while (colorPool.length > 0) {
             color = colorPool.shift();
-            if (theme && colorDistance(color, theme) < 50) { clashed.push(color); continue; }
+            if (hasColorClash(color, theme)) { clashed.push(color); continue; }
             found = true; break;
         }
         if (clashed.length) colorPool.push(...clashed);
@@ -122,7 +157,7 @@
         const d = groupColorMap.get(groupId);
         if (!d) return;
         const theme = getThemeColor();
-        if (!theme || colorDistance(d.color, theme) >= 50) return;
+        if (!theme || !hasColorClash(d.color, theme)) return;
         groupColorMap.delete(groupId);
         if (!d.pattern) colorPool.push(d.color);
         assignColorToGroup(groupId);
@@ -258,7 +293,8 @@
             if (!tilingId) return { tabEl, ident };
 
             const wrapper = tabEl.closest('.tab-wrapper');
-            let insetLeft = 0, insetRight = 0, radiusTl = '0px', radiusTr = '0px';
+            let insetLeft = 0, insetRight = 0;
+            let radiusTl = '0px', radiusTr = '0px', radiusBl = '0px', radiusBr = '0px';
             if (wrapper) {
                 const tabRect = tabEl.getBoundingClientRect();
                 const wrapperRect = wrapper.getBoundingClientRect();
@@ -271,14 +307,19 @@
                 const cs = window.getComputedStyle(tabEl);
                 radiusTl = cs.borderTopLeftRadius;
                 radiusTr = cs.borderTopRightRadius;
+                radiusBl = cs.borderBottomLeftRadius;
+                radiusBr = cs.borderBottomRightRadius;
             }
-            return { tabEl, ident, tilingId, wrapper, insetLeft, insetRight, radiusTl, radiusTr };
+            return {
+                tabEl, ident, tilingId, wrapper,
+                insetLeft, insetRight, radiusTl, radiusTr, radiusBl, radiusBr
+            };
         });
 
         // ── Write phase ──────────────────────────────────────────────
         planned.forEach(({
             tabEl, isGroup, ident, tilingId, wrapper,
-            insetLeft, insetRight, radiusTl, radiusTr
+            insetLeft, insetRight, radiusTl, radiusTr, radiusBl, radiusBr
         }) => {
             if (isGroup) { cleanupTab(tabEl); return; }
             // Don't clean up tabs we can't identify — the favicon may be
@@ -303,6 +344,8 @@
                 wrapper.style.setProperty('--tile-bar-inset-right', insetRight + 'px');
                 wrapper.style.setProperty('--tile-bar-radius-tl', radiusTl);
                 wrapper.style.setProperty('--tile-bar-radius-tr', radiusTr);
+                wrapper.style.setProperty('--tile-bar-radius-bl', radiusBl);
+                wrapper.style.setProperty('--tile-bar-radius-br', radiusBr);
             } else {
                 // No .tab-wrapper in this layout/version: host the bar on the tab
                 // itself rather than silently rendering nothing.
@@ -334,6 +377,8 @@
                 wrapper.style.removeProperty('--tile-bar-inset-right');
                 wrapper.style.removeProperty('--tile-bar-radius-tl');
                 wrapper.style.removeProperty('--tile-bar-radius-tr');
+                wrapper.style.removeProperty('--tile-bar-radius-bl');
+                wrapper.style.removeProperty('--tile-bar-radius-br');
             }
         }
     }

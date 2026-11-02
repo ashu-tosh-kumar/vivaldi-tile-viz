@@ -52,6 +52,8 @@ function load(tabs, chromeTabs) {
                 getPropertyValue: () => '',
                 borderTopLeftRadius: '4px',
                 borderTopRightRadius: '4px',
+                borderBottomLeftRadius: '2px',
+                borderBottomRightRadius: '2px',
             }),
         },
         chrome: { tabs: { query: (_, cb) => cb(chromeTabs.value) } },
@@ -92,6 +94,8 @@ describe('tab with a .tab-wrapper', () => {
         const m = load(tabs, { value: [tiled(1), tiled(2)] });
         await m.updateTiledTabs();
         expect(w1.classes.has('tab-tiled-wrapper')).toBe(true);
+        expect(w1.props['--tile-bar-radius-tl']).toBe('4px');
+        expect(w1.props['--tile-bar-radius-bl']).toBe('2px');
         expect(tabs[0].classes.has('tab-tiled-self')).toBe(false);
     });
 });
