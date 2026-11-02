@@ -14,5 +14,10 @@
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.6.0",
     "vitest": "^5.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "minimatch": "^11.0.4"
+    }
   }
 }
