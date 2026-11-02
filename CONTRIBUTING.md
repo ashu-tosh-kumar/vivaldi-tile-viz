@@ -10,7 +10,7 @@ Thank you for your interest in improving the Vivaldi Tiled Tabs Visualizer Mod! 
    - Create a feature branch (`git checkout -b feature/amazing-feature`).
    - Implement your changes.
    - **Lint and test**: Run `pnpm install`, then `pnpm lint` and `pnpm test`. CI runs both on every pull request. See the [Development section](README.md#development) of the README.
-   - **Review Changes**: Run a review of your modifications and the final code using the **Qodo** (formerly Codium) extension in VS Code. Address any security vulnerabilities, memory leak alerts, or performance bottlenecks identified.
+   - **Review Changes**: Review your code for security, memory leak risks, and UI performance bottlenecks. You can optionally use automated review tools like the **Qodo** extension in VS Code to assist with verification.
    - Commit your changes clearly.
    - Push your branch and open a Pull Request.
 

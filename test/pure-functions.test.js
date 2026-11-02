@@ -256,3 +256,62 @@ describe('getTabIdentifier', () => {
         expect(mod.getTabIdentifier(tab)).toBeNull();
     });
 });
+
+// ── getLuminance & contrastRatio ─────────────────────────────────────────────
+
+describe('getLuminance and contrastRatio', () => {
+    it('calculates correct relative luminance for black and white', () => {
+        expect(mod.getLuminance([0, 0, 0])).toBe(0);
+        expect(mod.getLuminance([255, 255, 255])).toBe(1);
+    });
+
+    it('returns 21:1 contrast ratio between black and white', () => {
+        expect(mod.contrastRatio('#ffffff', '#000000')).toBeCloseTo(21, 0);
+        expect(mod.contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 0);
+    });
+
+    it('returns 1:1 contrast ratio for identical colors', () => {
+        expect(mod.contrastRatio('#ef3939', '#ef3939')).toBe(1);
+        expect(mod.contrastRatio('#ffffff', '#ffffff')).toBe(1);
+    });
+});
+
+// ── hasColorClash ────────────────────────────────────────────────────────────
+
+describe('hasColorClash', () => {
+    it('returns false when theme is null', () => {
+        expect(mod.hasColorClash('#ef3939', null)).toBe(false);
+    });
+
+    it('flags identical or very close colors via Euclidean distance', () => {
+        expect(mod.hasColorClash('#ef3939', '#ef3939')).toBe(true);
+        // Distance < 50
+        expect(mod.hasColorClash('#ef3939', '#ef3940')).toBe(true);
+    });
+
+    it('flags bright yellow on pure white theme due to poor WCAG contrast', () => {
+        // #ffea00 on #ffffff has contrast ratio ~1.28 < 1.35
+        expect(mod.hasColorClash('#ffea00', '#ffffff')).toBe(true);
+    });
+
+    it('allows high-contrast colors on white theme', () => {
+        // Red, blue, purple have good contrast on white
+        expect(mod.hasColorClash('#ef3939', '#ffffff')).toBe(false);
+        expect(mod.hasColorClash('#00b0ff', '#ffffff')).toBe(false);
+    });
+});
+
+// ── isDebugEnabled ───────────────────────────────────────────────────────────
+
+describe('isDebugEnabled', () => {
+    it('returns false by default', () => {
+        expect(mod.isDebugEnabled()).toBe(false);
+    });
+
+    it('returns true when window.__TILE_VIZ_DEBUG__ is true', () => {
+        const debugMod = loadModule({
+            window: { __TILE_VIZ_DEBUG__: true },
+        });
+        expect(debugMod.isDebugEnabled()).toBe(true);
+    });
+});

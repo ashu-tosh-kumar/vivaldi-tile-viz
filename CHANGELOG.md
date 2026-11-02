@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.2.0] - 2026-11-02
+
+### Added
+
+- **Vertical and bottom tab bar support**: Full styling and corner rounding support for tabs positioned at the Left, Right, or Bottom of the browser window.
+- **CSS variable customization**: Indicator thickness can now be customized via `--tile-viz-thickness` in custom CSS without modifying JavaScript.
+- **Perceptual contrast & WCAG luminance checks**: Enhanced theme clash detection to calculate WCAG relative luminance contrast ratios, preventing bright colors (such as yellow) from blending into pure white themes.
+- **Dynamic console debugging**: Added `window.__TILE_VIZ_DEBUG__` and `data-tileviz-debug` runtime toggles to enable `[TileViz]` trace logs directly in Vivaldi DevTools without altering source files.
+- **Community links and badges**: Added direct links and shields badge for the active Vivaldi Forum discussion thread in the README.
+
+### Changed
+
+- **Contribution guide**: Relaxed VS Code review extension recommendation from mandatory to optional in `CONTRIBUTING.md`.
+- **Security hardening**: Pinned all GitHub Actions across CI, Scorecard, and Dependency Review workflows to immutable commit SHAs.
+- **Security policy**: Added direct advisory reporting link and standard 90-day coordinated vulnerability disclosure expectations in `SECURITY.md`.
+
+---
+
 ## [v1.1.1] - 2026-10-29
 
 ### Added
