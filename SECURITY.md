@@ -20,4 +20,15 @@ Because Vivaldi mods execute within the browser's own UI context (`window.html` 
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability, please do not open a public issue. Instead, report it by opening a private draft security advisory in the GitHub repository or contact the project maintainer directly.
+If you discover a security vulnerability, please do not disclose it publicly or open a public issue. Instead, report it securely by submitting a private advisory:
+
+- **Security Advisory URL**: [Submit a Vulnerability Report](https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/security/advisories/new)
+
+### Vulnerability Disclosure Policy & Timelines
+
+We take the security of this project seriously and adhere to coordinated vulnerability disclosure best practices:
+
+- **Initial Response & Acknowledgment**: Vulnerability reports will be acknowledged within 48 hours of receipt.
+- **Assessment**: The maintainer will investigate and validate the vulnerability within 7 days.
+- **Fix & Remediation**: A patch will be prepared and tested in private advisory workspaces.
+- **Disclosure Timeline**: A patched version and public security advisory disclosing the vulnerability will be published within 90 days of the initial report, or sooner once a fix has been verified.
