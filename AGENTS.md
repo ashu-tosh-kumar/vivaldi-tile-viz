@@ -10,7 +10,7 @@ A Vivaldi browser mod that color-codes tabs sharing a tiled split-screen layout.
 
 ```bash
 pnpm install        # install dev dependencies (eslint, vitest); lockfile pnpm-lock.yaml
-pnpm lint           # eslint on assets/custom.js (.eslintrc.yml: eslint 8 + standard)
+pnpm lint           # eslint on assets/custom.js (eslint.config.js: eslint 10 + neostandard)
 pnpm test           # run the vitest suite once
 pnpm test:watch     # re-run tests on file changes
 ```
@@ -40,7 +40,7 @@ Run every command CI runs (`pnpm lint`, `pnpm test`) before finishing a change. 
 
 - 4-space indentation, semicolons required, `const`/`let` only (no `var`). Double-quoted strings are acceptable.
 - Keep `'use strict';` and all logic inside the IIFE in `assets/custom.js`.
-- `.eslintrc.yml` (ESLint 8 + `standard`) is the style source of truth.
+- `eslint.config.js` (ESLint 10 + `neostandard`) is the style source of truth.
 - Do not remove existing JSDoc comments or parameter details unless asked.
 - Flip `TILE_DEBUG` to `true` only while debugging; commit it as `false`.
 - Markdown follows `.markdownlint.json`.
