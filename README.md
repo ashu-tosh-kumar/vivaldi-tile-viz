@@ -107,7 +107,7 @@ The mod itself has no runtime dependencies or build step. [Node.js](https://node
 
 ```bash
 pnpm install        # install dev dependencies (eslint, vitest)
-pnpm lint           # lint assets/custom.js with ESLint (standard + .eslintrc.yml)
+pnpm lint           # lint assets/custom.js with ESLint (neostandard + eslint.config.js)
 pnpm test           # run the test suite once
 pnpm test:watch     # re-run tests on file changes
 ```
