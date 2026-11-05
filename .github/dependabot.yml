@@ -1,13 +1,17 @@
 # Dependabot: version updates + security updates.
-# - npm ecosystem covers package.json / lockfile.
+# - npm ecosystem covers package.json / lockfile (npm and pnpm alike).
 # - github-actions keeps workflow action versions current (supply-chain hardening).
 # Updates are grouped to minimize PR noise.
+# Cooldown delays version updates until a release is a week old, so a
+# compromised publish is likely caught before it lands (security updates skip it).
 version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     groups:
       npm-dependencies:
         patterns: ["*"]
@@ -16,6 +20,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     groups:
       github-actions:
         patterns: ["*"]
