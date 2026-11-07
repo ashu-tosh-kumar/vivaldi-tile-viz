@@ -3,8 +3,8 @@
 [![License: MIT](https://img.shields.io/github/license/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&color=blue)](LICENSE)
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&label=openssf%20scorecard)](https://scorecard.dev/viewer/?uri=github.com/ashu-tosh-kumar/vivaldi-tile-viz)
 <!-- OpenSSF Best Practices: register at https://www.bestpractices.dev/en/projects/new then add: [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/PROJECT_ID/badge)](https://www.bestpractices.dev/projects/PROJECT_ID) -->
-[![CI](https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/actions/workflows/ci.yml/badge.svg)](https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&color=blue)](https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/releases)
+[![CI](https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/actions/workflows/ci.yml/badge.svg)](https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/actions/workflows/ci.yml)
 [![Vivaldi Forum Thread](https://img.shields.io/badge/Vivaldi%20Forum-Discussion-006ee6?style=flat-square&logo=discourse)](https://forum.vivaldi.net/topic/119265/vivaldi-mod-adding-a-missing-visual-cue-for-tiled-tabs)
 
 <img width="1438" height="73" alt="Screenshot 2026-06-26 at 11 56 50 PM" src="https://github.com/user-attachments/assets/329fa19d-8fd1-4f82-ac24-5e3ed203bd37" />
