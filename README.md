@@ -1,21 +1,39 @@
-# Vivaldi Tiled Tabs Visualizer Mod
+<p align="center">
+  <a href="https://github.com/ashu-tosh-kumar/vivaldi-tile-viz" target="_blank" rel="noreferrer noopener">
+    <img width="160" alt="vivaldi-tile-viz logo" src="assets/icons/icon-v1.png">
+  </a>
+</p>
+<p align="center"><strong>Never lose track of your split-screen tabs again.</strong> vivaldi-tile-viz dynamically color-codes tiled tabs with clean, theme-aware accent bars. Free, open source, and nothing leaves your browser.</p>
+<p align="center">Interactive showcase &amp; guides: <a href="https://uncommonlydone.com/tools/vivaldi-tile-viz"><strong>uncommonlydone.com/tools/vivaldi-tile-viz</strong></a></p>
+<br/>
+<p align="center">
+  <a rel="noreferrer noopener" href="https://uncommonlydone.com/tools/vivaldi-tile-viz"><img alt="Interactive Showcase" src="https://img.shields.io/badge/Showcase-uncommonlydone.com%2Ftools%2Fvivaldi--tile--viz-c42b2f.svg?&style=for-the-badge"></a>
+</p>
 
-[![License: MIT](https://img.shields.io/github/license/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&color=blue)](LICENSE)
-[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&label=openssf%20scorecard)](https://scorecard.dev/viewer/?uri=github.com/ashu-tosh-kumar/vivaldi-tile-viz)
-<!-- OpenSSF Best Practices: register at https://www.bestpractices.dev/en/projects/new then add: [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/PROJECT_ID/badge)](https://www.bestpractices.dev/projects/PROJECT_ID) -->
-[![Release](https://img.shields.io/github/v/release/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&color=blue)](https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/releases)
-[![CI](https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/actions/workflows/ci.yml/badge.svg)](https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/actions/workflows/ci.yml)
-[![Vivaldi Forum Thread](https://img.shields.io/badge/Vivaldi%20Forum-Discussion-006ee6?style=flat-square&logo=discourse)](https://forum.vivaldi.net/topic/119265/vivaldi-mod-adding-a-missing-visual-cue-for-tiled-tabs)
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&color=blue"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/ashu-tosh-kumar/vivaldi-tile-viz"><img alt="OpenSSF Scorecard" src="https://img.shields.io/ossf-scorecard/github.com/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&label=openssf%20scorecard"></a>
+  <a href="https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/releases"><img alt="Release" src="https://img.shields.io/github/v/release/ashu-tosh-kumar/vivaldi-tile-viz?style=flat-square&color=blue"></a>
+  <a href="https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ashu-tosh-kumar/vivaldi-tile-viz/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://forum.vivaldi.net/topic/119265/vivaldi-mod-adding-a-missing-visual-cue-for-tiled-tabs"><img alt="Vivaldi Forum Thread" src="https://img.shields.io/badge/Vivaldi%20Forum-Discussion-006ee6?style=flat-square&logo=discourse"></a>
+</p>
+<!-- OpenSSF Best Practices: register at https://www.bestpractices.dev/en/projects/new then add: <a href="https://www.bestpractices.dev/projects/PROJECT_ID"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/PROJECT_ID/badge"></a> -->
+
+<h2 align="center">Vivaldi Tiled Tabs Visualizer Mod</h2>
+<br/>
+<p align="center">A visual enhancements mod for Vivaldi browser that dynamically color-codes tiled tabs. It places a clean, colorful accent bar at the edge of tabs that are part of the same split-screen tiled layout, giving you instant visual context on how your workspace is grouped.</p>
+<br/>
+<br/>
 
 <img width="1438" height="73" alt="Screenshot 2026-06-26 at 11 56 50 PM" src="https://github.com/user-attachments/assets/329fa19d-8fd1-4f82-ac24-5e3ed203bd37" />
+
+*Explore the interactive showcase and layout previews on [uncommonlydone.com/tools/vivaldi-tile-viz](https://uncommonlydone.com/tools/vivaldi-tile-viz).*
 
 <br/><br/>
 
 <!--
 <img width="1440" height="808" alt="Screenshot 2026-06-26 at 5 36 38 AM" src="https://github.com/user-attachments/assets/d6fb8973-6df8-4ee6-bcae-83a28d2a3bfe" />
 -->
-
-A visual enhancements mod for Vivaldi browser that dynamically color-codes tiled tabs. It places a clean, colorful accent bar at the edge of tabs that are part of the same split-screen tiled layout, giving you instant visual context on how your workspace is grouped.
 
 ## Features
 
@@ -125,6 +143,7 @@ Notes:
 
 We are committed to maintaining a secure, lightweight, and private tool:
 
+- **[Interactive Showcase & Guides](https://uncommonlydone.com/tools/vivaldi-tile-viz)**: Official tool page, visual guides, and interactive walkthrough.
 - **[Privacy Policy](PRIVACY.md)**: Zero network calls, zero data collection, and fully stateless local processing.
 - **[Security Policy](SECURITY.md)**: Secure browser UI coding practices and safety standards.
 - **[Contributing Guidelines](CONTRIBUTING.md)**: Instructions on how to report issues or suggest improvements.
