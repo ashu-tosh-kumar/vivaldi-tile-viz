@@ -1,5 +1,17 @@
 {
   "MD013": false,
-  "MD024": { "siblings_only": true },
-  "MD033": { "allowed_elements": ["img", "br", "p", "a"] }
+  "MD024": {
+    "siblings_only": true
+  },
+  "MD033": {
+    "allowed_elements": [
+      "img",
+      "br",
+      "p",
+      "a",
+      "h2",
+      "strong"
+    ]
+  },
+  "MD041": false
 }
