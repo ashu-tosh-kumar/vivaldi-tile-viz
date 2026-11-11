@@ -9,11 +9,11 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "eslint": "^10.13.0",
+    "eslint": "^10.14.0",
     "eslint-plugin-n": "^18.5.0",
     "eslint-plugin-promise": "^7.3.0",
     "neostandard": "^0.14.1",
-    "vitest": "^5.0.0"
+    "vitest": "^5.1.0"
   },
   "pnpm": {
     "overrides": {
